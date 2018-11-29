@@ -6,27 +6,18 @@ import (
 )
 
 func TestBDS05_AirbornePosition(t *testing.T) {
-	msgEven := NewMessageContext("8D40058B58C904A87F402D3B8C59")
-	msgOdd := NewMessageContext("8D40058B58C901375147EFD09357")
+	msgEven := NewMessage("8D40058B58C904A87F402D3B8C59", time.Now())
+	msgOdd := NewMessage("8D40058B58C901375147EFD09357", time.Now().Add(time.Second*5))
 
-	msgOdd.SetTime(time.Now().Add(time.Second * 5))
+	bds := BDS05{}
 
-	msgEven.SetLastAirPositionMessage(msgOdd, false)
-
-	bds := NewBDS05()
-
-	data, err := bds.AirbornePosition(msgEven)
+	lat, lon, err := bds.AirbornePosition(msgEven, msgOdd)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	if len(data) != 2 {
-		t.Errorf("len data != 2 => %d", len(data))
-		return
-	}
-
-	if data[AIRBORN_LAT] != 49.81755 || data[AIRBORN_LON] != 6.08442 {
+	if lat != 49.81755 || lon != 6.08442 {
 		t.Error("Позиция определена не корректно")
 	}
 }
@@ -60,27 +51,26 @@ func TestBDS05_PositionRef(t *testing.T) {
 	bds := BDS05{}
 
 	for _, pos := range list {
-		ctx := NewMessageContext(pos.Message)
-		ctx.SetLastAirPosition(&GeoPosition{pos.Lat, pos.Lon})
+		msg := NewMessage(pos.Message, time.Now())
 
-		data, err := bds.AirbornePositionWithRef(ctx)
+		lat, lon, err := bds.AirbornePositionWithRef(msg, pos.Lat, pos.Lon)
 		if err != nil {
 			t.Error(err)
 			return
 		}
 
-		if data[AIRBORN_LAT] != pos.ResLat || data[AIRBORN_LON] != pos.ResLon {
+		if lat != pos.ResLat || lon != pos.ResLon {
 			t.Error("Позиция определена не корректно")
 		}
 	}
 }
 
 func TestBDS05_Altitude(t *testing.T) {
-	ctx := NewMessageContext("8D40058B58C901375147EFD09357")
+	msg := NewMessage("8D40058B58C901375147EFD09357", time.Now())
 
 	bds := BDS05{}
 
-	if data, err := bds.Altitude(ctx); err != nil || data[ALTITUDE] != 39000 {
+	if alt, err := bds.Altitude(msg); err != nil || alt != 39000 {
 		if err != nil {
 			t.Error(err)
 			return

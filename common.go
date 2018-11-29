@@ -1,7 +1,6 @@
 package adsbdecoder
 
 import (
-	"errors"
 	"fmt"
 	"math"
 	"strconv"
@@ -9,59 +8,82 @@ import (
 )
 
 var (
-	hexToBinLookup = map[string]string{
-		"0": "0000",
-		"1": "0001",
-		"2": "0010",
-		"3": "0011",
-		"4": "0100",
-		"5": "0101",
-		"6": "0110",
-		"7": "0111",
-		"8": "1000",
-		"9": "1001",
-		"a": "1010",
-		"b": "1011",
-		"c": "1100",
-		"d": "1101",
-		"e": "1110",
-		"f": "1111",
+	hexToBinLookup = map[string][]uint8{
+		"0": []uint8{0, 0, 0, 0},
+		"1": []uint8{0, 0, 0, 1},
+		"2": []uint8{0, 0, 1, 0},
+		"3": []uint8{0, 0, 1, 1},
+		"4": []uint8{0, 1, 0, 0},
+		"5": []uint8{0, 1, 0, 1},
+		"6": []uint8{0, 1, 1, 0},
+		"7": []uint8{0, 1, 1, 1},
+		"8": []uint8{1, 0, 0, 0},
+		"9": []uint8{1, 0, 0, 1},
+		"a": []uint8{1, 0, 1, 0},
+		"b": []uint8{1, 0, 1, 1},
+		"c": []uint8{1, 1, 0, 0},
+		"d": []uint8{1, 1, 0, 1},
+		"e": []uint8{1, 1, 1, 0},
+		"f": []uint8{1, 1, 1, 1},
 	}
-	crcGenerator = [25]int{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1}
+	crcGenerator = [25]uint8{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1}
 	chars        = "#ABCDEFGHIJKLMNOPQRSTUVWXYZ#####_###############0123456789######"
 )
 
 type Common struct{}
 
-func MustHex2Bin(hex string) []string {
-	bin := ""
+func Hex2Bin(hex string) []uint8 {
+	bin := []uint8{}
 
 	for _, r := range strings.ToLower(hex) {
 		c, ok := hexToBinLookup[string(r)]
 		if !ok {
-			return []string{}
+			return []uint8{}
 		}
 
-		bin += c
+		bin = append(bin, c...)
 	}
 
-	return strings.Split(bin, "")
+	return bin
 }
 
-func MustBinToInt(bin string) int64 {
-	var (
-		i   int64
-		err error
-	)
+// []uint8{0,0,1,0,1} => "00101"
+func BinToString(bin []uint8) string {
+	str := ""
 
-	if i, err = strconv.ParseInt(bin, 2, 64); err != nil {
-		panic(err)
+	for i := range bin {
+		str += strconv.Itoa(int(bin[i]))
+	}
+
+	return str
+}
+
+// "00101" => []uint8{0,0,1,0,1}
+func StringToBin(bin string) []uint8 {
+	sbin := []uint8{}
+
+	for _, ch := range bin {
+		i, err := strconv.Atoi(string(ch))
+		if err != nil {
+			return []uint8{}
+		}
+
+		sbin = append(sbin, uint8(i))
+	}
+
+	return sbin
+}
+
+func BinToInt(bin []uint8) int64 {
+	i, err := strconv.ParseInt(BinToString(bin), 2, 64)
+	if err != nil {
+		return 0
 	}
 
 	return i
 }
 
-func MustHexToInt(hex string) int64 {
+func HexToInt(hex string) int64 {
 	var (
 		i   int64
 		err error
@@ -74,43 +96,32 @@ func MustHexToInt(hex string) int64 {
 	return i
 }
 
-func DF(msgbin []string) int {
-	df := MustBinToInt(strings.Join(msgbin[0:5], ""))
-
-	return int(df)
-}
-
-func CRC(ctx *MessageContext, encode bool) (string, error) {
-	bin := ctx.GetBin()
-
+func CRC(bin []uint8, encode bool) []uint8 {
 	if encode {
 		bin = bin[:len(bin)-24]
 
 		for i := 0; i < 24; i++ {
-			bin = append(bin, "0")
+			bin = append(bin, 0)
 		}
 	}
 
 	for i := 0; i < len(bin)-24; i++ {
-		if bin[i] != "1" {
+		if bin[i] != 1 {
 			continue
 		}
 
 		for ci, cv := range crcGenerator {
-			vi, err := strconv.Atoi(bin[i+ci])
-			if err != nil {
-				return "", err
-			}
+			vi := bin[i+ci]
 
-			bin[i+ci] = strconv.Itoa(vi ^ cv)
+			bin[i+ci] = vi ^ cv
 		}
 	}
 
-	return strings.Join(bin[len(bin)-24:], ""), nil
+	return bin[len(bin)-24:]
 }
 
-func Gray2Int(graystr string) int64 {
-	num := MustBinToInt(graystr)
+func Gray2Int(graystr []uint8) int64 {
+	num := BinToInt(graystr)
 
 	num ^= (num >> 8)
 	num ^= (num >> 4)
@@ -165,47 +176,34 @@ func CprNL(lat float64) float64 {
 	return math.Floor(nl)
 }
 
-func ICAO(ctx *MessageContext) (string, error) {
+func ICAO(msg *Message) string {
 	var addr string
 
-	switch ctx.GetDF() {
+	switch msg.DF {
 	case 11, 17, 18:
-		addr = ctx.GetHex()[2:8]
+		addr = msg.Hex[2:8]
 		break
-	case 0, 4, 5, 16, 20, 21:
-		coCrx, err := CRC(ctx, true)
-		if err != nil {
-			return "", err
-		}
+	case 0, 4, 5, 16, 20, 21, 24:
+		coCrx := CRC(msg.GetBin(), true)
 
-		c0 := MustBinToInt(coCrx)
-		if err != nil {
-			return "", err
-		}
-
-		c1 := MustHexToInt(ctx.GetHex()[len(ctx.GetHex())-6:])
-		if err != nil {
-			return "", err
-		}
+		c0 := BinToInt(coCrx)
+		c1 := HexToInt(msg.Hex[len(msg.Hex)-6:])
 
 		addr = fmt.Sprintf("%06X", c0^c1)
 		break
 	}
 
-	return addr, nil
-
+	return addr
 }
 
-func IDCODE(ctx *MessageContext) string {
-	bin := ctx.GetBin()
-
+func IDCODE(bin []uint8) string {
 	C1 := bin[19]
 	A1 := bin[20]
 	C2 := bin[21]
 	A2 := bin[22]
 	C4 := bin[23]
 	A4 := bin[24]
-	// _ = mbin[25]
+	// _ = bin[25]
 	B1 := bin[26]
 	D1 := bin[27]
 	B2 := bin[28]
@@ -213,55 +211,60 @@ func IDCODE(ctx *MessageContext) string {
 	B4 := bin[30]
 	D4 := bin[31]
 
-	byte1, _ := strconv.ParseInt(A4+A2+A1, 2, 10)
-	byte2, _ := strconv.ParseInt(B4+B2+B1, 2, 10)
-	byte3, _ := strconv.ParseInt(C4+C2+C1, 2, 10)
-	byte4, _ := strconv.ParseInt(D4+D2+D1, 2, 10)
+	byte1, _ := strconv.ParseInt(BinToString([]uint8{A4, A2, A1}), 2, 10)
+	byte2, _ := strconv.ParseInt(BinToString([]uint8{B4, B2, B1}), 2, 10)
+	byte3, _ := strconv.ParseInt(BinToString([]uint8{C4, C2, C1}), 2, 10)
+	byte4, _ := strconv.ParseInt(BinToString([]uint8{D4, D2, D1}), 2, 10)
 
 	return fmt.Sprintf("%d%d%d%d", byte1, byte2, byte3, byte4)
 }
 
 // AltCode Computes the altitude from DF4 or DF20 message, bit 20-32.
-func AltCode(ctx *MessageContext) (int, error) {
-	mbin := ctx.GetBin()
+func AltCode(b []uint8) (int, error) {
+	bin := make([]uint8, len(b))
+	copy(bin, b)
 
-	mBit, qBit := mbin[25], mbin[27]
+	mBit, qBit := bin[25], bin[27]
 
 	var alt int64
 
-	if mBit == "0" {
-		if qBit == "1" {
-			vbin := strings.Join(mbin[19:25], "") + mbin[26] + strings.Join(mbin[28:32], "")
-			alt = MustBinToInt(vbin)
+	if mBit == 0 {
+		if qBit == 1 {
+			vbin := append(bin[19:25], bin[26])
+			vbin = append(vbin, bin[28:32]...)
+			//vbin := strings.Join(bin[19:25], "") + bin[26] + strings.Join(bin[28:32], "")
+			alt = BinToInt(vbin)
 			alt = (alt * 25) - 1000
 		} else {
-			C1 := mbin[19]
-			A1 := mbin[20]
-			C2 := mbin[21]
-			A2 := mbin[22]
-			C4 := mbin[23]
-			A4 := mbin[24]
-			//# _ = mbin[25]
-			B1 := mbin[26]
-			//# D1 = mbin[27]     # always zero
-			B2 := mbin[28]
-			D2 := mbin[29]
-			B4 := mbin[30]
-			D4 := mbin[31]
+			C1 := bin[19]
+			A1 := bin[20]
+			C2 := bin[21]
+			A2 := bin[22]
+			C4 := bin[23]
+			A4 := bin[24]
+			//# _ = bin[25]
+			B1 := bin[26]
+			//# D1 = bin[27]     # always zero
+			B2 := bin[28]
+			D2 := bin[29]
+			B4 := bin[30]
+			D4 := bin[31]
 
-			graystr := D2 + D4 + A1 + A2 + A4 + B1 + B2 + B4 + C1 + C2 + C4
+			graystr := []uint8{D2, D4, A1, A2, A4, B1, B2, B4, C1, C2, C4}
 			alt = int64(Gray2Alt(graystr))
 		}
 	} else {
-		vbin := strings.Join(mbin[19:25], "") + mbin[26] + strings.Join(mbin[26:31], "")
-		alt = MustBinToInt(vbin)
+		vbin := append(bin[19:25], bin[26])
+		vbin = append(vbin, bin[26:31]...)
+		//vbin := strings.Join(bin[19:25], "") + bin[26] + strings.Join(bin[26:31], "")
+		alt = BinToInt(vbin)
 		alt = int64(float32(alt) * 3.28084)
 	}
 
 	return int(alt), nil
 }
 
-func Gray2Alt(codestr string) int {
+func Gray2Alt(codestr []uint8) int {
 	gc500 := codestr[:8]
 	n500 := Gray2Int(gc500)
 
@@ -285,58 +288,10 @@ func Gray2Alt(codestr string) int {
 	return int(alt)
 }
 
-func OEFlag(bin []string) (flag bool) {
-	flag = false
-
-	if bin[53] == "1" {
-		flag = true
-	}
-
-	return
+func OEFlag(bin []uint8) bool {
+	return bin[53] == 1
 }
 
-func TypeCode(bin []string) uint {
-	return uint(MustBinToInt(strings.Join(bin[32:37], "")))
-}
-
-func FlightDataAppend(map1, map2 FlightData) FlightData {
-	for key := range map2 {
-		map1[key] = map2[key]
-	}
-
-	return map1
-}
-
-func ShuffleFlagMessage(base *MessageContext, list ...*MessageContext) (even, odd *MessageContext, err error) {
-	if base.GetOEFlag() {
-		even = base
-
-		for i := range list {
-			if list[i] == nil {
-				continue
-			}
-
-			if !list[i].GetOEFlag() {
-				odd = list[i]
-
-				return
-			}
-		}
-	}
-
-	odd = base
-
-	for i := range list {
-		if list[i] == nil {
-			continue
-		}
-
-		if list[i].GetOEFlag() {
-			even = list[i]
-
-			return
-		}
-	}
-
-	return nil, nil, errors.New("Not found")
+func TypeCode(bin []uint8) uint {
+	return uint(BinToInt(bin[32:37]))
 }

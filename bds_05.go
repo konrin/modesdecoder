@@ -3,42 +3,15 @@ package adsbdecoder
 import (
 	"errors"
 	"math"
-	"strings"
 )
 
-type BDS05 struct {
-	BDS
-}
+type BDS05 struct{}
 
-func NewBDS05() BDS05 {
-	return BDS05{}
-}
-
-func (BDS05) Is(ctx *MessageContext) bool {
-	return true
-}
-
-func (BDS05) Decode(ctx *MessageContext) (FlightData, error) {
-	data := make(FlightData)
-
-	return data, nil
-}
-
-func (BDS05) AirbornePosition(ctx *MessageContext) (FlightData, error) {
-	data := make(FlightData)
-
-	msg0, msg1, err := ShuffleFlagMessage(ctx, ctx.LastAirEvenMsg, ctx.LastAirOddMsg)
-	if err != nil {
-		return data, err
-	}
-
-	bin2 := strings.Join(msg0.GetBin(), "")
-	bin1 := strings.Join(msg1.GetBin(), "")
-
-	cprlatEven := float64(MustBinToInt(bin1[54:71])) / 131072.0
-	cprlonEven := float64(MustBinToInt(bin1[71:88])) / 131072.0
-	cprlatOdd := float64(MustBinToInt(bin2[54:71])) / 131072.0
-	cprlonOdd := float64(MustBinToInt(bin2[71:88])) / 131072.0
+func (BDS05) AirbornePosition(msgEven *Message, msgOdd *Message) (float64, float64, error) {
+	cprlatEven := float64(BinToInt(msgOdd.Bin[54:71])) / 131072.0
+	cprlonEven := float64(BinToInt(msgOdd.Bin[71:88])) / 131072.0
+	cprlatOdd := float64(BinToInt(msgEven.Bin[54:71])) / 131072.0
+	cprlonOdd := float64(BinToInt(msgEven.Bin[71:88])) / 131072.0
 
 	airDLatEven := 360.0 / 60
 	airDLatOdd := 360.0 / 59
@@ -57,12 +30,12 @@ func (BDS05) AirbornePosition(ctx *MessageContext) (FlightData, error) {
 	}
 
 	if cprNLEven, cprNLOdd := CprNL(latEven), CprNL(latOdd); cprNLEven != cprNLOdd {
-		return data, errors.New("cprNLEven != cprNLOdd")
+		return 0, 0, errors.New("cprNLEven != cprNLOdd")
 	}
 
 	var lat, lon float64
 
-	if msg0.GetTime().Unix() > msg1.GetTime().Unix() {
+	if msgEven.ReceiptAt.Unix() > msgOdd.ReceiptAt.Unix() {
 		lat = latEven
 		nl := CprNL(lat)
 		ni := math.Max(nl-0, 1)
@@ -83,23 +56,14 @@ func (BDS05) AirbornePosition(ctx *MessageContext) (FlightData, error) {
 	lat = Round(lat, .5, 5)
 	lon = Round(lon, .5, 5)
 
-	data[AIRBORN_LAT] = lat
-	data[AIRBORN_LON] = lon
-
-	return data, nil
+	return lat, lon, nil
 }
 
-func (BDS05) AirbornePositionWithRef(ctx *MessageContext) (FlightData, error) {
-	data := make(FlightData)
-
+func (BDS05) AirbornePositionWithRef(msg *Message, latRef, lonRef float64) (float64, float64, error) {
 	var lat, lon float64
 
-	if ctx.LastAirPosition == nil {
-		return data, errors.New("Not found air ref position")
-	}
-
 	i := 0
-	if ctx.GetOEFlag() {
+	if msg.OE {
 		i = 1
 	}
 
@@ -108,12 +72,10 @@ func (BDS05) AirbornePositionWithRef(ctx *MessageContext) (FlightData, error) {
 		dLat = 360.0 / 59
 	}
 
-	bin := strings.Join(ctx.GetBin(), "")
+	cprLat := float64(BinToInt(msg.Bin[54:71])) / 131072.0
+	cprLon := float64(BinToInt(msg.Bin[71:88])) / 131072.0
 
-	cprLat := float64(MustBinToInt(bin[54:71])) / 131072.0
-	cprLon := float64(MustBinToInt(bin[71:88])) / 131072.0
-
-	j := math.Floor(ctx.LastAirPosition.Lat/dLat) + math.Floor(0.5+(Mod(ctx.LastAirPosition.Lat, dLat)/dLat)-cprLat)
+	j := math.Floor(latRef/dLat) + math.Floor(0.5+(Mod(latRef, dLat)/dLat)-cprLat)
 
 	lat = dLat * (j + cprLat)
 
@@ -124,35 +86,22 @@ func (BDS05) AirbornePositionWithRef(ctx *MessageContext) (FlightData, error) {
 		dLon = 360.0 / ni
 	}
 
-	w := math.Floor(ctx.LastAirPosition.Lon/dLon) + math.Floor(0.5+(Mod(ctx.LastAirPosition.Lon, dLon)/dLon)-cprLon)
+	w := math.Floor(lonRef/dLon) + math.Floor(0.5+(Mod(lonRef, dLon)/dLon)-cprLon)
 
 	lon = dLon * (w + cprLon)
 
 	lat = Round(lat, .5, 5)
 	lon = Round(lon, .5, 5)
 
-	data[AIRBORN_LAT] = lat
-	data[AIRBORN_LON] = lon
-
-	return data, nil
+	return lat, lon, nil
 }
 
-func (BDS05) Altitude(ctx *MessageContext) (FlightData, error) {
-	data := make(FlightData)
-
-	if ctx.GetTypeCode() >= 5 && ctx.GetTypeCode() <= 8 {
-		return data, errors.New("")
+func (BDS05) Altitude(msg *Message) (int, error) {
+	if msg.Bin[47] != 1 {
+		return 0, errors.New("")
 	}
 
-	if ctx.GetBin()[47] != "1" {
-		return data, errors.New("")
-	}
+	n := int(BinToInt(append(msg.Bin[40:47], msg.Bin[48:52]...)))
 
-	bin := strings.Join(ctx.GetBin(), "")
-
-	n := int(MustBinToInt(bin[40:47] + bin[48:52]))
-
-	data[ALTITUDE] = n*25 - 1000
-
-	return data, nil
+	return n*25 - 1000, nil
 }

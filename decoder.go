@@ -1,55 +1,59 @@
 package adsbdecoder
 
 import (
-	"sync"
 	"time"
 )
 
 type Decoder struct {
-	poolMessageContext sync.Pool
+	BDS06 BDS06
+	BDS08 BDS08
 }
 
-func NewDecoder() *Decoder {
+func NewDecoer() *Decoder {
 	return &Decoder{
-		poolMessageContext: sync.Pool{
-			New: func() interface{} {
-				return NewMessageContext("")
-			},
-		},
+		BDS06: BDS06{},
+		BDS08: BDS08{},
 	}
 }
 
-func (d *Decoder) GetMessageContext(hex string) *MessageContext {
-	ctx := (d.poolMessageContext.Get()).(*MessageContext)
+func (d *Decoder) Decode(msg, lastOdd, lastEven string, latRef, lonRef float64) {
+	m := NewMessage(msg, time.Now())
 
-	ctx.time = time.Now()
+	if m.DF == 11 {
 
-	return ctx.SetHex(hex)
-}
+	} else if m.DF == 17 || m.DF == 18 {
+		// Automatic Dependent Surveillance - Broadcast (ADS-B)
 
-func (d *Decoder) Decode(ctx *MessageContext) (FlightData, error) {
-	data := make(FlightData)
+		if m.TC >= 1 && m.TC <= 4 {
+			// BDS 0,8: Aircraft identification and category
 
-	BDSDecoders := make([]BDS, 0)
+			m.Callsign = d.BDS08.Callsign(m)
+			m.Category = d.BDS08.Category(m)
+		} else if m.TC >= 5 && m.TC <= 8 {
+			// BDS 0,6: Surface position
 
-	switch ctx.GetDF() {
-	case 17, 18:
-		break
-	case 20, 21:
+		} else if m.TC >= 9 && m.TC <= 18 {
+			// BDS 0,5: Airborne position
 
-		break
-	}
-
-	for i := range BDSDecoders {
-		newData, err := BDSDecoders[i].Decode(ctx)
-		if err != nil {
-			// oops, logging
-		} else {
-			data = FlightDataAppend(data, newData)
+		} else if m.TC == 19 {
+			// BDS 0,9: Airborne velocity
+		} else if m.TC == 28 {
+			// BDS 6,1: Airborne status [to be implemented]
+		} else if m.TC == 29 {
+			// BDS 6,2: Target state and status information [to be implemented]
+		} else if m.TC == 31 {
+			// BDS 6,5: Aircraft operational status [to be implemented]
 		}
+
+	} else if m.DF == 20 || m.DF == 21 {
+		// Mode-S Comm-B replies
 	}
 
-	d.poolMessageContext.Put(ctx)
+	if m.DF == 4 || m.DF == 20 {
+		// Altitude code
+	}
 
-	return data, nil
+	if m.DF == 5 || m.DF == 21 {
+		//  Identity code (squawk code)
+	}
 }

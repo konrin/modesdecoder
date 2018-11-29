@@ -1,14 +1,13 @@
 package adsbdecoder
 
 import (
-	"strings"
 	"testing"
+	"time"
 )
 
 func TestHexToBin(t *testing.T) {
-	s := MustHex2Bin("6E406B")
-
-	bin := strings.Join(s, "")
+	s := Hex2Bin("6E406B")
+	bin := BinToString(s)
 
 	if bin != "011011100100000001101011" {
 		t.Errorf("Expected 011011100100000001101011 : %s--", bin)
@@ -16,25 +15,19 @@ func TestHexToBin(t *testing.T) {
 }
 
 func TestCRCDecode(t *testing.T) {
-	checksum, err := CRC(NewMessageContext("8D406B902015A678D4D220AA4BDA"), false)
-	if err != nil {
-		t.Error(err)
-	}
+	checksum := CRC(NewMessage("8D406B902015A678D4D220AA4BDA", time.Now()).Bin, false)
 
-	if checksum != "000000000000000000000000" {
+	if BinToString(checksum) != "000000000000000000000000" {
 		t.Errorf("oops")
 	}
 }
 
 func TestCRCEncode(t *testing.T) {
-	checksum, err := CRC(NewMessageContext("8D406B902015A678D4D220AA4BDA"), true)
-	if err != nil {
-		t.Error(err)
-	}
+	checksum := CRC(NewMessage("8D406B902015A678D4D220AA4BDA", time.Now()).Bin, true)
 
-	b := MustHex2Bin("AA4BDA")
+	b := Hex2Bin("AA4BDA")
 
-	if checksum != strings.Join(b, "") {
+	if BinToString(checksum) != BinToString(b) {
 		t.Errorf("oops")
 	}
 }
@@ -48,12 +41,10 @@ func TestICAO(t *testing.T) {
 	}
 
 	for hex := range testdata {
-		ctx := NewMessageContext(hex)
+		msg := NewMessage(hex, time.Now())
 
-		icao, err := ICAO(ctx)
-		if err != nil {
-			t.Error(err)
-		}
+		icao := ICAO(msg)
+
 		if icao != testdata[hex] {
 			t.Errorf("%s %s", icao, testdata[hex])
 		}
@@ -62,7 +53,7 @@ func TestICAO(t *testing.T) {
 }
 
 func TestModeSAltcode(t *testing.T) {
-	code, err := AltCode(NewMessageContext("A02014B400000000000000F9D514"))
+	code, err := AltCode(NewMessage("A02014B400000000000000F9D514", time.Now()).Bin)
 	if err != nil {
 		t.Error(err)
 		return
@@ -74,7 +65,7 @@ func TestModeSAltcode(t *testing.T) {
 }
 
 func TestModeSIdCode(t *testing.T) {
-	code := IDCODE(NewMessageContext("A800292DFFBBA9383FFCEB903D01"))
+	code := IDCODE(NewMessage("A800292DFFBBA9383FFCEB903D01", time.Now()).Bin)
 	if code != "1346" {
 		t.Errorf("%s %s", code, "1346")
 	}
@@ -100,7 +91,7 @@ func TestGreyCodeToAltitude(t *testing.T) {
 	}
 
 	for grey := range testData {
-		alt := Gray2Alt(grey)
+		alt := Gray2Alt(StringToBin(grey))
 		if alt != testData[grey] {
 			t.Errorf("%d %d", alt, testData[grey])
 			return
