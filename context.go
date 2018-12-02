@@ -1,4 +1,4 @@
-package adsbdecoder
+package modesdecoder
 
 // const (
 // 	OEFlagEven = true

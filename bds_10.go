@@ -1,4 +1,4 @@
-package adsbdecoder
+package modesdecoder
 
 type BDS10 struct{}
 

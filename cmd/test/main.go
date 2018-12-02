@@ -1,19 +1,19 @@
 package main
 
 import (
-	"adsb_decoder"
 	"fmt"
+	"modesdecoder"
 	"time"
 )
 
 func main() {
 
-	decoder := adsbdecoder.NewDecoder(adsbdecoder.CACHE_TTL)
+	decoder := modesdecoder.NewDecoder(modesdecoder.CACHE_TTL)
 
 	_ = decoder
 
 	for _, m := range messages {
-		msg := adsbdecoder.NewMessage(m, time.Now())
+		msg := modesdecoder.NewMessage(m, time.Now())
 
 		err := decoder.Decode(msg)
 		if err != nil {

@@ -1,4 +1,4 @@
-package adsbdecoder
+package modesdecoder
 
 var AllBDS = []string{
 	"05", "06", "07", "08", "09", "0A", "20", "21", "40", "41",
