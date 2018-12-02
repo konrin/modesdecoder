@@ -21,8 +21,9 @@ func main() {
 			continue
 		}
 
-		fmt.Printf("%d, %s, %s, %d, (%f, %f), %f, %f, %d, %s, %d\n",
+		fmt.Printf("%d (%s), %s, %s, %d, (%f, %f), %f, %f, %d, %s, %d\n",
 			msg.DF,
+			msg.Squawk,
 			msg.ICAO,
 			msg.Callsign,
 			msg.Category,

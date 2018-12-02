@@ -23,6 +23,8 @@ type Message struct {
 	Tag      string
 	Rocd     int
 
+	Squawk string
+
 	Lat,
 	Lon float64
 

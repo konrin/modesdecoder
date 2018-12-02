@@ -123,11 +123,11 @@ func (d *Decoder) Decode(msg *Message) error {
 				return err
 			}
 		} else if msg.TC == 28 {
-			// BDS 6,1: Airborne status [to be implemented]
+			// BDS 6,1: Airborne status
 		} else if msg.TC == 29 {
-			// BDS 6,2: Target state and status information [to be implemented]
+			// BDS 6,2: Target state and status information
 		} else if msg.TC == 31 {
-			// BDS 6,5: Aircraft operational status [to be implemented]
+			// BDS 6,5: Aircraft operational status
 		}
 
 	} else if msg.DF == 20 || msg.DF == 21 {
@@ -144,6 +144,8 @@ func (d *Decoder) Decode(msg *Message) error {
 
 	if msg.DF == 5 || msg.DF == 21 {
 		//  Identity code (squawk code)
+
+		msg.Squawk = IDCODE(msg.GetBin())
 	}
 
 	return nil

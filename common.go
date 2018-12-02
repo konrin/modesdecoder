@@ -196,6 +196,7 @@ func ICAO(msg *Message) string {
 	return addr
 }
 
+// Computes identity (squawk code) from DF5 or DF21 message, bit 20-32.
 func IDCODE(bin []uint8) string {
 	C1 := bin[19]
 	A1 := bin[20]
