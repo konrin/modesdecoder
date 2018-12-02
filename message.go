@@ -18,6 +18,10 @@ type Message struct {
 	// позывной
 	Callsign string
 	Category uint
+	Speed    float64
+	Track    float64
+	Tag      string
+	Rocd     int
 
 	Lat,
 	Lon float64

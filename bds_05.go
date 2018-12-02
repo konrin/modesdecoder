@@ -3,15 +3,16 @@ package adsbdecoder
 import (
 	"errors"
 	"math"
+	"time"
 )
 
 type BDS05 struct{}
 
-func (BDS05) AirbornePosition(msgEven *Message, msgOdd *Message) (float64, float64, error) {
-	cprlatEven := float64(BinToInt(msgOdd.Bin[54:71])) / 131072.0
-	cprlonEven := float64(BinToInt(msgOdd.Bin[71:88])) / 131072.0
-	cprlatOdd := float64(BinToInt(msgEven.Bin[54:71])) / 131072.0
-	cprlonOdd := float64(BinToInt(msgEven.Bin[71:88])) / 131072.0
+func (BDS05) AirbornePosition(binEven []uint8, timeEven time.Time, binOdd []uint8, timeOdd time.Time) (float64, float64, error) {
+	cprlatEven := float64(BinToInt(binOdd[54:71])) / 131072.0
+	cprlonEven := float64(BinToInt(binOdd[71:88])) / 131072.0
+	cprlatOdd := float64(BinToInt(binEven[54:71])) / 131072.0
+	cprlonOdd := float64(BinToInt(binEven[71:88])) / 131072.0
 
 	airDLatEven := 360.0 / 60
 	airDLatOdd := 360.0 / 59
@@ -35,7 +36,7 @@ func (BDS05) AirbornePosition(msgEven *Message, msgOdd *Message) (float64, float
 
 	var lat, lon float64
 
-	if msgEven.ReceiptAt.Unix() > msgOdd.ReceiptAt.Unix() {
+	if timeEven.UnixNano() > timeOdd.UnixNano() {
 		lat = latEven
 		nl := CprNL(lat)
 		ni := math.Max(nl-0, 1)
@@ -59,11 +60,11 @@ func (BDS05) AirbornePosition(msgEven *Message, msgOdd *Message) (float64, float
 	return lat, lon, nil
 }
 
-func (BDS05) AirbornePositionWithRef(msg *Message, latRef, lonRef float64) (float64, float64, error) {
+func (BDS05) AirbornePositionWithRef(bin []uint8, oeFlag bool, latRef, lonRef float64) (float64, float64, error) {
 	var lat, lon float64
 
 	i := 0
-	if msg.OE {
+	if oeFlag {
 		i = 1
 	}
 
@@ -72,8 +73,8 @@ func (BDS05) AirbornePositionWithRef(msg *Message, latRef, lonRef float64) (floa
 		dLat = 360.0 / 59
 	}
 
-	cprLat := float64(BinToInt(msg.Bin[54:71])) / 131072.0
-	cprLon := float64(BinToInt(msg.Bin[71:88])) / 131072.0
+	cprLat := float64(BinToInt(bin[54:71])) / 131072.0
+	cprLon := float64(BinToInt(bin[71:88])) / 131072.0
 
 	j := math.Floor(latRef/dLat) + math.Floor(0.5+(Mod(latRef, dLat)/dLat)-cprLat)
 
@@ -96,12 +97,19 @@ func (BDS05) AirbornePositionWithRef(msg *Message, latRef, lonRef float64) (floa
 	return lat, lon, nil
 }
 
-func (BDS05) Altitude(msg *Message) (int, error) {
-	if msg.Bin[47] != 1 {
-		return 0, errors.New("")
+func (BDS05) Altitude(bin []uint8, ts uint) (alt int, err error) {
+	mb := bin[32:]
+
+	if ts < 19 {
+		// barometric altitude
+		if mb[15] == 1 {
+			n := int(BinToInt(append(mb[8:15], mb[16:20]...)))
+			alt = n*25 - 1000
+		}
+	} else {
+		// GNSS altitude, meters
+		alt = int(BinToInt(mb[8:20]))
 	}
 
-	n := int(BinToInt(append(msg.Bin[40:47], msg.Bin[48:52]...)))
-
-	return n*25 - 1000, nil
+	return
 }

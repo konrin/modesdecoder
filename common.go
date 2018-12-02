@@ -220,10 +220,7 @@ func IDCODE(bin []uint8) string {
 }
 
 // AltCode Computes the altitude from DF4 or DF20 message, bit 20-32.
-func AltCode(b []uint8) (int, error) {
-	bin := make([]uint8, len(b))
-	copy(bin, b)
-
+func AltCode(bin []uint8) (int, error) {
 	mBit, qBit := bin[25], bin[27]
 
 	var alt int64
@@ -294,4 +291,25 @@ func OEFlag(bin []uint8) bool {
 
 func TypeCode(bin []uint8) uint {
 	return uint(BinToInt(bin[32:37]))
+}
+
+func Data(bin []uint8) []uint8 {
+	return bin[32 : len(bin)-24]
+}
+
+func Allzeros(bin []uint8) bool {
+	return BinToInt(Data(bin)) == 0
+}
+
+// Check if the status bit and field bits are consistency. This Function
+// is used for checking BDS code versions.
+func Wrongstatus(data []uint8, sb, msb, lsb int) bool {
+	status := int(data[sb-1])
+	value := BinToInt(data[msb-1 : lsb])
+
+	if status == 0 && value != 0 {
+		return true
+	}
+
+	return false
 }
