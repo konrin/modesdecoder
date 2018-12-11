@@ -15,6 +15,9 @@ type Decoder struct {
 	BDS06 BDS06
 	BDS08 BDS08
 	BDS09 BDS09
+	BDS40 BDS40
+	BDS44 BDS44
+	BDS50 BDS50
 
 	cacheTTL float64
 
@@ -72,6 +75,9 @@ func NewDecoder(cacheTTL float64) *Decoder {
 		BDS06: BDS06{},
 		BDS08: BDS08{},
 		BDS09: BDS09{},
+		BDS40: BDS40{},
+		BDS44: BDS44{},
+		BDS50: BDS50{},
 
 		cacheTTL:      cacheTTL,
 		cachePosition: make(map[string]*AircraftPositionInfo, 0),
@@ -132,6 +138,19 @@ func (d *Decoder) Decode(msg *Message) error {
 
 	} else if msg.DF == 20 || msg.DF == 21 {
 		// Mode-S Comm-B replies
+
+		if d.BDS40.Is(msg.GetBin()) {
+			msg.Altitude, _ = d.BDS40.Alt(msg.GetBin())
+		}
+
+		if d.BDS50.Is(msg.GetBin()) {
+			msg.Roll = d.BDS50.Roll(msg.GetBin())
+			msg.Trk = d.BDS50.TRK(msg.GetBin())
+			msg.GS = d.BDS50.GS(msg.GetBin())
+			msg.Rtrk = d.BDS50.RTRK(msg.GetBin())
+			msg.Tas = d.BDS50.TAS(msg.GetBin())
+		}
+
 	}
 
 	if msg.DF == 4 || msg.DF == 20 {

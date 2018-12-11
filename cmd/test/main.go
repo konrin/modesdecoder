@@ -21,7 +21,7 @@ func main() {
 			continue
 		}
 
-		fmt.Printf("%d (%s), %s, %s, %d, (%f, %f), %f, %f, %d, %s, %d\n",
+		fmt.Printf("%d (%s), %s, %s, %d, (%f, %f), %f, %f, %d, %s, %d | %f, %d, %f, %f, %d\n",
 			msg.DF,
 			msg.Squawk,
 			msg.ICAO,
@@ -34,6 +34,11 @@ func main() {
 			msg.Rocd,
 			msg.Tag,
 			msg.Altitude,
+			msg.Roll,
+			msg.GS,
+			msg.Trk,
+			msg.Rtrk,
+			msg.Tas,
 		)
 		//fmt.Printf("%+v\n", msg)
 	}

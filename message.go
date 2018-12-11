@@ -28,6 +28,12 @@ type Message struct {
 	Lat,
 	Lon float64
 
+	Roll float32
+	Trk  float32
+	GS   int
+	Rtrk float32
+	Tas  int
+
 	IsAirborn bool
 }
 
