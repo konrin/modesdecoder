@@ -1,1 +1,1 @@
-module modesdecoder
+module github.com/konrin/modesdecoder
