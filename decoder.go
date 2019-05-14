@@ -7,7 +7,7 @@ import (
 
 const (
 	// в сек
-	CACHE_TTL float64 = 60
+	CACHE_TTL = time.Minute
 )
 
 type Decoder struct {
@@ -19,7 +19,7 @@ type Decoder struct {
 	BDS44 BDS44
 	BDS50 BDS50
 
-	cacheTTL float64
+	cacheTTL time.Duration
 
 	sync.Mutex
 	cachePosition map[string]*AircraftPositionInfo
@@ -69,7 +69,7 @@ func (i *AircraftPositionInfo) SetOddMsg(msg *Message) {
 	i.modd = msg
 }
 
-func NewDecoder(cacheTTL float64) *Decoder {
+func NewDecoder(cacheTTL time.Duration) *Decoder {
 	return &Decoder{
 		BDS05: BDS05{},
 		BDS06: BDS06{},
@@ -226,7 +226,7 @@ func (d *Decoder) GetAircraftPositionFromCache(icao string) *AircraftPositionInf
 		}
 	}
 
-	if info.updateAt.Sub(time.Now()).Seconds() > d.cacheTTL {
+	if info.updateAt.Sub(time.Now()) > d.cacheTTL {
 		info = &AircraftPositionInfo{
 			updateAt: time.Now(),
 		}
