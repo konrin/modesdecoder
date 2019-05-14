@@ -10,7 +10,7 @@ func TestBDS08_Callsign(t *testing.T) {
 
 	bds := BDS08{}
 
-	if data := bds.Callsign(msg.GetBin()); data != "EZY85MH_" {
-		t.Error("Номер рейса не распарсен")
+	if data := bds.Callsign(msg.GetBin()); data != "EZY85MH" {
+		t.Error("Flight number is not parsed " + data)
 	}
 }
