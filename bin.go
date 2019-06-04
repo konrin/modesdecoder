@@ -69,7 +69,7 @@ func (b *Bits) Char(from, to int) string {
 	if b.err != nil {
 		return ""
 	}
-	if i < 0 || i >= len(chars) {
+	if i < 0 || i >= int64(len(chars)) {
 		b.err = fmt.Errorf("invalid char index: %d", i)
 		return ""
 	}
