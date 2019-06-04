@@ -10,14 +10,8 @@ import (
 func TestHexToBin(t *testing.T) {
 	bits, err := ParseHex("6E406B")
 	assert.NilError(t, err)
-
-	bin := BinToString(bits.Raw())
-
-	assert.Equal(t, bits.String(bits.Full()), BinToString(bits.Raw()))
-
-	if bin != "011011100100000001101011" {
-		t.Errorf("Expected 011011100100000001101011 : %s--", bin)
-	}
+	assert.Equal(t, bits.String(bits.Full()), "011011100100000001101011")
+	assert.NilError(t, bits.Err())
 }
 
 func TestCRCDecode(t *testing.T) {
