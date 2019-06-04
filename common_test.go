@@ -15,7 +15,7 @@ func TestHexToBin(t *testing.T) {
 }
 
 func TestCRCDecode(t *testing.T) {
-	checksum := CRC(NewMessage("8D406B902015A678D4D220AA4BDA", time.Now()).Bin, false)
+	checksum := CRC(NewMessage("8D406B902015A678D4D220AA4BDA", time.Now()).GetBin(), false)
 
 	if BinToString(checksum) != "000000000000000000000000" {
 		t.Errorf("oops")
@@ -23,7 +23,7 @@ func TestCRCDecode(t *testing.T) {
 }
 
 func TestCRCEncode(t *testing.T) {
-	checksum := CRC(NewMessage("8D406B902015A678D4D220AA4BDA", time.Now()).Bin, true)
+	checksum := CRC(NewMessage("8D406B902015A678D4D220AA4BDA", time.Now()).GetBin(), true)
 
 	b := Hex2Bin("AA4BDA")
 
@@ -53,7 +53,7 @@ func TestICAO(t *testing.T) {
 }
 
 func TestModeSAltcode(t *testing.T) {
-	code, err := AltCode(NewMessage("A02014B400000000000000F9D514", time.Now()).Bin)
+	code, err := AltCode(NewMessage("A02014B400000000000000F9D514", time.Now()).GetBin())
 	if err != nil {
 		t.Error(err)
 		return
@@ -65,7 +65,7 @@ func TestModeSAltcode(t *testing.T) {
 }
 
 func TestModeSIdCode(t *testing.T) {
-	code := IDCODE(NewMessage("A800292DFFBBA9383FFCEB903D01", time.Now()).Bin)
+	code := IDCODE(NewMessage("A800292DFFBBA9383FFCEB903D01", time.Now()).GetBin())
 	if code != "1346" {
 		t.Errorf("%s %s", code, "1346")
 	}

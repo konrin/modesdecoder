@@ -65,8 +65,5 @@ func NewMessage(msg string, receiptAt time.Time) *Message {
 }
 
 func (m *Message) GetBin() []uint8 {
-	newBin := make([]uint8, len(m.Bin))
-	copy(newBin, m.Bin)
-
-	return newBin
+	return NewBits(m.Bin).Copy().Raw()
 }
