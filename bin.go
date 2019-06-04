@@ -31,6 +31,10 @@ func (b *Bits) Len() int {
 	return len(b.bits)
 }
 
+func (b *Bits) Full() (int, int) {
+	return 0, b.Len() - 1
+}
+
 func (b *Bits) Err() error {
 	return b.err
 }
@@ -52,8 +56,24 @@ func (b *Bits) At(i int) uint8 {
 	return b.bits[i]
 }
 
+func (b *Bits) IsZero(from, to int) bool {
+	return b.Int64(from, to) == 0
+}
+
 func (b *Bits) Bool(i int) bool {
 	return b.At(i) == 1
+}
+
+func (b *Bits) Char(from, to int) string {
+	i := b.Int64(8, 14)
+	if b.err != nil {
+		return ""
+	}
+	if i < 0 || i >= len(chars) {
+		b.err = fmt.Errorf("invalid char index: %d", i)
+		return ""
+	}
+	return string(chars[i])
 }
 
 func (b *Bits) String(from, to int) string {
