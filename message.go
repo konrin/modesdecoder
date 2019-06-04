@@ -6,7 +6,7 @@ import (
 
 type Message struct {
 	Hex       string
-	Bin       []uint8
+	Bin       *Bits
 	ReceiptAt time.Time
 
 	DF   uint
@@ -49,7 +49,7 @@ func NewMessage(msg string, receiptAt time.Time) *Message {
 
 	m := &Message{
 		Hex:       msg,
-		Bin:       bin,
+		Bin:       b,
 		ReceiptAt: receiptAt,
 		DF:        df,
 	}
@@ -65,5 +65,5 @@ func NewMessage(msg string, receiptAt time.Time) *Message {
 }
 
 func (m *Message) GetBin() []uint8 {
-	return NewBits(m.Bin).Copy().Raw()
+	return m.Bin.Copy().Raw()
 }
