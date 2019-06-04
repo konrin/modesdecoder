@@ -39,17 +39,16 @@ type Message struct {
 
 func NewMessage(msg string, receiptAt time.Time) *Message {
 
-	b, err := ParseHex(msg)
+	bits, err := ParseHex(msg)
 	if err != nil {
 		return nil
 	}
 
-	bin := Hex2Bin(msg)
-	df := uint(b.Int64(0, 5))
+	df := bits.Uint(0, 5)
 
 	m := &Message{
 		Hex:       msg,
-		Bin:       b,
+		Bin:       bits,
 		ReceiptAt: receiptAt,
 		DF:        df,
 	}
@@ -57,8 +56,8 @@ func NewMessage(msg string, receiptAt time.Time) *Message {
 	m.ICAO = ICAO(m)
 
 	if df == 17 || df == 18 {
-		m.TC = TypeCode(bin)
-		m.OE = OEFlag(bin)
+		m.TC = TypeCode(bits)
+		m.OE = OEFlag(bits)
 	}
 
 	return m

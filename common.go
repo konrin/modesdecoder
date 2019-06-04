@@ -286,12 +286,12 @@ func Gray2Alt(codestr []uint8) int {
 	return int(alt)
 }
 
-func OEFlag(bin []uint8) bool {
-	return bin[53] == 1
+func OEFlag(bits *Bits) bool {
+	return bits.Bool(53)
 }
 
-func TypeCode(bin []uint8) uint {
-	return uint(BinToInt(bin[32:37]))
+func TypeCode(bits *Bits) uint {
+	return bits.Uint(32, 37)
 }
 
 func Data(bin []uint8) []uint8 {
