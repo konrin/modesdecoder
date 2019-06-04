@@ -35,13 +35,11 @@ func (b *Bits) Err() error {
 	return b.err
 }
 
-func (b *Bits) Copy() *Bits {
+func (b *Bits) Raw() []uint8 {
 	bits := make([]uint8, len(b.bits))
 	copy(bits, b.bits)
-	return &Bits{bits: bits}
+	return bits
 }
-
-func (b *Bits) Raw() []uint8 { return b.bits }
 
 func (b *Bits) At(i int) uint8 {
 	if b.err != nil {
