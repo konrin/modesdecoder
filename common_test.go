@@ -7,7 +7,7 @@ import (
 	"gotest.tools/assert"
 )
 
-func TestHexToBin(t *testing.T) {
+func TestBitsString(t *testing.T) {
 	bits, err := ParseHex("6E406B")
 	assert.NilError(t, err)
 	assert.Equal(t, bits.String(bits.Full()), "011011100100000001101011")
