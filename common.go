@@ -8,23 +8,23 @@ import (
 )
 
 var (
-	hexToBinLookup = map[string][]uint8{
-		"0": []uint8{0, 0, 0, 0},
-		"1": []uint8{0, 0, 0, 1},
-		"2": []uint8{0, 0, 1, 0},
-		"3": []uint8{0, 0, 1, 1},
-		"4": []uint8{0, 1, 0, 0},
-		"5": []uint8{0, 1, 0, 1},
-		"6": []uint8{0, 1, 1, 0},
-		"7": []uint8{0, 1, 1, 1},
-		"8": []uint8{1, 0, 0, 0},
-		"9": []uint8{1, 0, 0, 1},
-		"a": []uint8{1, 0, 1, 0},
-		"b": []uint8{1, 0, 1, 1},
-		"c": []uint8{1, 1, 0, 0},
-		"d": []uint8{1, 1, 0, 1},
-		"e": []uint8{1, 1, 1, 0},
-		"f": []uint8{1, 1, 1, 1},
+	hexToBinLookup = map[rune][]uint8{
+		'0': []uint8{0, 0, 0, 0},
+		'1': []uint8{0, 0, 0, 1},
+		'2': []uint8{0, 0, 1, 0},
+		'3': []uint8{0, 0, 1, 1},
+		'4': []uint8{0, 1, 0, 0},
+		'5': []uint8{0, 1, 0, 1},
+		'6': []uint8{0, 1, 1, 0},
+		'7': []uint8{0, 1, 1, 1},
+		'8': []uint8{1, 0, 0, 0},
+		'9': []uint8{1, 0, 0, 1},
+		'a': []uint8{1, 0, 1, 0},
+		'b': []uint8{1, 0, 1, 1},
+		'c': []uint8{1, 1, 0, 0},
+		'd': []uint8{1, 1, 0, 1},
+		'e': []uint8{1, 1, 1, 0},
+		'f': []uint8{1, 1, 1, 1},
 	}
 	crcGenerator = [25]uint8{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1}
 	chars        = "#ABCDEFGHIJKLMNOPQRSTUVWXYZ#####_###############0123456789######"
@@ -36,7 +36,7 @@ func Hex2Bin(hex string) []uint8 {
 	bin := []uint8{}
 
 	for _, r := range strings.ToLower(hex) {
-		c, ok := hexToBinLookup[string(r)]
+		c, ok := hexToBinLookup[r]
 		if !ok {
 			return []uint8{}
 		}

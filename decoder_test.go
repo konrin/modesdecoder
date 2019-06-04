@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/sanity-io/litter"
 	"gotest.tools/golden"
 )
 
@@ -270,7 +271,7 @@ func TestMessage(t *testing.T) {
 		name := fmt.Sprintf("%d_%s", i, m)
 		t.Run(name, func(t *testing.T) {
 			msg := NewMessage(m, epoch)
-			actual := fmt.Sprintf("%#v", msg)
+			actual := litter.Sdump(msg)
 			golden.Assert(t, actual, name)
 		})
 	}

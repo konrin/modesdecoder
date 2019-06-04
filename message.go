@@ -38,8 +38,14 @@ type Message struct {
 }
 
 func NewMessage(msg string, receiptAt time.Time) *Message {
+
+	b, err := ParseHex(msg)
+	if err != nil {
+		return nil
+	}
+
 	bin := Hex2Bin(msg)
-	df := uint(BinToInt(bin[0:5]))
+	df := uint(b.Int64(0, 5))
 
 	m := &Message{
 		Hex:       msg,

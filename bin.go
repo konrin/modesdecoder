@@ -3,6 +3,7 @@ package modesdecoder
 import (
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 type Bin struct {
@@ -10,18 +11,22 @@ type Bin struct {
 	err  error
 }
 
+func (b *Bin) Len() int {
+	return len(b.bits)
+}
+
 func (b *Bin) Err() error {
 	return b.err
 }
 
-func ParseBin(s string) (*Bin, error) {
+func ParseHex(hex string) (*Bin, error) {
 	var bin Bin
-	for _, ch := range s {
-		i, err := strconv.Atoi(string(ch))
-		if err != nil {
-			return nil, err
+	for _, r := range strings.ToLower(hex) {
+		c, ok := hexToBinLookup[r]
+		if !ok {
+			return nil, fmt.Errorf("invalid hex: %v", c)
 		}
-		bin.bits = append(bin.bits, uint8(i))
+		bin.bits = append(bin.bits, c...)
 	}
 	return &bin, nil
 }
@@ -30,8 +35,8 @@ func (b *Bin) Bits(from, to int) []uint8 {
 	if b.err != nil {
 		return nil
 	}
-	if from <= 0 || to >= len(b.bits) {
-		b.err = fmt.Errorf("bits out of range (%d - %d)", from, to)
+	if from < 0 || to >= len(b.bits) {
+		b.err = fmt.Errorf("bits out of range (from=%d, to=%d, len=%d) ", from, to, len(b.bits))
 		return nil
 	}
 	return b.bits[from:to]
