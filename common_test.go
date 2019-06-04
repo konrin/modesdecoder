@@ -3,11 +3,17 @@ package modesdecoder
 import (
 	"testing"
 	"time"
+
+	"gotest.tools/assert"
 )
 
 func TestHexToBin(t *testing.T) {
-	s := Hex2Bin("6E406B")
-	bin := BinToString(s)
+	bits, err := ParseHex("6E406B")
+	assert.NilError(t, err)
+
+	bin := BinToString(bits.Raw())
+
+	assert.Equal(t, bits.String(bits.Full()), BinToString(bits.Raw()))
 
 	if bin != "011011100100000001101011" {
 		t.Errorf("Expected 011011100100000001101011 : %s--", bin)
@@ -25,7 +31,10 @@ func TestCRCDecode(t *testing.T) {
 func TestCRCEncode(t *testing.T) {
 	checksum := CRC(NewMessage("8D406B902015A678D4D220AA4BDA", time.Now()).GetBin(), true)
 
-	b := Hex2Bin("AA4BDA")
+	bits, err := ParseHex("AA4BDA")
+	assert.NilError(t, err)
+
+	b := bits.Raw()
 
 	if BinToString(checksum) != BinToString(b) {
 		t.Errorf("oops")

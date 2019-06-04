@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math"
 	"strconv"
-	"strings"
 )
 
 var (
@@ -31,21 +30,6 @@ var (
 )
 
 type Common struct{}
-
-func Hex2Bin(hex string) []uint8 {
-	bin := []uint8{}
-
-	for _, r := range strings.ToLower(hex) {
-		c, ok := hexToBinLookup[r]
-		if !ok {
-			return []uint8{}
-		}
-
-		bin = append(bin, c...)
-	}
-
-	return bin
-}
 
 // []uint8{0,0,1,0,1} => "00101"
 func BinToString(bin []uint8) string {

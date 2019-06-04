@@ -32,7 +32,7 @@ func (b *Bits) Len() int {
 }
 
 func (b *Bits) Full() (int, int) {
-	return 0, b.Len() - 1
+	return 0, b.Len()
 }
 
 func (b *Bits) Err() error {
@@ -113,7 +113,7 @@ func (b *Bits) slice(from, to int) []uint8 {
 	if b.err != nil {
 		return nil
 	}
-	if from < 0 || to >= len(b.bits) {
+	if from < 0 || to > len(b.bits) {
 		b.err = fmt.Errorf("bits out of range (from=%d, to=%d, len=%d) ", from, to, len(b.bits))
 		return nil
 	}
