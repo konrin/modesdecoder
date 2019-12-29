@@ -2,13 +2,13 @@ package modesdecoder
 
 type BDS44 struct{}
 
-func (bds BDS44) Is(bin []uint8) bool {
+func (bds BDS44) Is(bits *Bits) bool {
 
-	if Allzeros(bin) {
+	if Allzeros(bits) {
 		return false
 	}
 
-	d := Data(bin)
+	d := Data(bits)
 
 	if Wrongstatus(d, 5, 6, 23) {
 		return false
@@ -26,16 +26,16 @@ func (bds BDS44) Is(bin []uint8) bool {
 		return false
 	}
 
-	if BinToInt(d[0:4]) > 4 {
+	if d.Int64(0, 4) > 4 {
 		return false
 	}
 
-	v, w := bds.Wind(bin)
+	v, w := bds.Wind(bits)
 	if (v+w) != 0 && v > 250 {
 		return false
 	}
 
-	temp := bds.Temp(bin)
+	temp := bds.Temp(bits)
 	if temp == 0 || temp > 60 || temp < -80 {
 		return false
 	}
@@ -43,24 +43,25 @@ func (bds BDS44) Is(bin []uint8) bool {
 	return true
 }
 
-func (BDS44) Wind(bin []uint8) (float32, float32) {
-	d := Data(bin)
+func (BDS44) Wind(bits *Bits) (float32, float32) {
+	d := Data(bits)
 
-	if d[4] == 0 {
+	if d.At(4) == 0 {
 		return 0, 0
 	}
 
-	speed := BinToInt(d[5:14])
-	directions := BinToInt(d[14:23]) * 180.0 / 256.0
+	speed := d.Int64(5, 14)
+	directions := d.Int64(14, 23) * 180.0 / 256.0
 
-	return float32(Round(float64(speed), 0, 2)), float32(Round(float64(directions), 1, 2))
+	return float32(Round(float64(speed), 0, 2)),
+		float32(Round(float64(directions), 1, 2))
 }
 
-func (BDS44) Temp(bin []uint8) float32 {
-	d := Data(bin)
+func (BDS44) Temp(bits *Bits) float32 {
+	d := Data(bits)
 
-	sign := d[23]
-	val := BinToInt(d[24:34])
+	sign := d.At(23)
+	val := d.Int64(24, 34)
 
 	if sign > 0 {
 		val = val - 1024
@@ -72,22 +73,22 @@ func (BDS44) Temp(bin []uint8) float32 {
 	return float32(temp)
 }
 
-func (BDS44) Pressure(bin []uint8) int {
-	d := Data(bin)
+func (BDS44) Pressure(bits *Bits) int {
+	d := Data(bits)
 
-	if d[34] == 0 {
+	if d.At(34) == 0 {
 		return 0
 	}
 
-	return int(BinToInt(d[35:46]))
+	return int(d.Int64(35, 46))
 }
 
-func (BDS44) Hum(bin []uint8) float32 {
-	d := Data(bin)
+func (BDS44) Hum(bits *Bits) float32 {
+	d := Data(bits)
 
-	if d[49] == 0 {
+	if d.At(49) == 0 {
 		return 0
 	}
 
-	return float32(BinToInt(d[50:56]) * 100.0 / 64)
+	return float32(d.Int64(50, 56) * 100.0 / 64)
 }

@@ -7,12 +7,14 @@ import "strings"
 // // Aircraft identitification and category
 type BDS08 struct{}
 
-func (BDS08) Callsign(bin []uint8) string {
-	csbin := bin[40:96]
+func (BDS08) Callsign(bits *Bits) string {
+	csbin := bits.Slice(40, 96)
 
 	ct := [][]uint8{
-		csbin[0:6], csbin[6:12], csbin[12:18], csbin[18:24],
-		csbin[24:30], csbin[30:36], csbin[36:42], csbin[42:48],
+		csbin.Slice(0, 6).Raw(), csbin.Slice(6, 12).Raw(),
+		csbin.Slice(12, 18).Raw(), csbin.Slice(18, 24).Raw(),
+		csbin.Slice(24, 30).Raw(), csbin.Slice(30,36).Raw(),
+		csbin.Slice(36,42).Raw(), csbin.Slice(42,48).Raw(),
 	}
 
 	var cs string
@@ -27,6 +29,6 @@ func (BDS08) Callsign(bin []uint8) string {
 	return cs
 }
 
-func (BDS08) Category(bin []uint8) uint {
-	return uint(BinToInt(bin[5:8]))
+func (BDS08) Category(bits *Bits) uint {
+	return uint(bits.Int64(5,8))
 }

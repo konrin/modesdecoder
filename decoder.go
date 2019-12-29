@@ -7,7 +7,7 @@ import (
 
 const (
 	// в сек
-	CACHE_TTL = time.Minute
+	CacheTtl = time.Minute
 )
 
 type Decoder struct {
@@ -97,8 +97,8 @@ func (d *Decoder) Decode(msg *Message) error {
 		if msg.TC >= 1 && msg.TC <= 4 {
 			// BDS 0,8: Aircraft identification and category
 
-			msg.Callsign = d.BDS08.Callsign(msg.GetBin())
-			msg.Category = d.BDS08.Category(msg.GetBin())
+			msg.Callsign = d.BDS08.Callsign(msg.Bin)
+			msg.Category = d.BDS08.Category(msg.Bin)
 		} else if msg.TC >= 5 && msg.TC <= 8 {
 			// BDS 0,6: Surface position
 
@@ -124,7 +124,7 @@ func (d *Decoder) Decode(msg *Message) error {
 			d.AircraftPositionMarkUpdated(posInfo)
 		} else if msg.TC == 19 {
 			// BDS 0,9: Airborne velocity
-			msg.Speed, msg.Track, msg.Rocd, msg.Tag, err = d.BDS09.AirborneVelocity(msg.GetBin())
+			msg.Speed, msg.Track, msg.Rocd, msg.Tag, err = d.BDS09.AirborneVelocity(msg.Bin)
 			if err != nil {
 				return err
 			}
@@ -139,23 +139,23 @@ func (d *Decoder) Decode(msg *Message) error {
 	} else if msg.DF == 20 || msg.DF == 21 {
 		// Mode-S Comm-B replies
 
-		if d.BDS40.Is(msg.GetBin()) {
-			msg.Altitude, _ = d.BDS40.Alt(msg.GetBin())
+		if d.BDS40.Is(msg.Bin) {
+			msg.Altitude, _ = d.BDS40.Alt(msg.Bin)
 		}
 
-		if d.BDS50.Is(msg.GetBin()) {
-			msg.Roll = d.BDS50.Roll(msg.GetBin())
-			msg.Trk = d.BDS50.TRK(msg.GetBin())
-			msg.GS = d.BDS50.GS(msg.GetBin())
-			msg.Rtrk = d.BDS50.RTRK(msg.GetBin())
-			msg.Tas = d.BDS50.TAS(msg.GetBin())
+		if d.BDS50.Is(msg.Bin) {
+			msg.Roll = d.BDS50.Roll(msg.Bin)
+			msg.Trk = d.BDS50.TRK(msg.Bin)
+			msg.GS = d.BDS50.GS(msg.Bin)
+			msg.Rtrk = d.BDS50.RTRK(msg.Bin)
+			msg.Tas = d.BDS50.TAS(msg.Bin)
 		}
 
 	}
 
 	if msg.DF == 4 || msg.DF == 20 {
 		// Altitude code
-		msg.Altitude, err = AltCode(msg.GetBin())
+		msg.Altitude, err = AltCode(msg.Bin)
 		if err != nil {
 			return err
 		}
@@ -164,7 +164,7 @@ func (d *Decoder) Decode(msg *Message) error {
 	if msg.DF == 5 || msg.DF == 21 {
 		//  Identity code (squawk code)
 
-		msg.Squawk = IDCODE(msg.GetBin())
+		msg.Squawk = IDCODE(msg.Bin)
 	}
 
 	return nil

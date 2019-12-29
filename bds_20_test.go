@@ -10,7 +10,7 @@ func TestBDS02_CS(t *testing.T) {
 
 	bds := BDS20{}
 
-	if data := bds.CS(msg.GetBin()); data != "KLM1017_" {
+	if data := bds.CS(msg.Bin); data != "KLM1017_" {
 		t.Error("Номер рейса не распарсен")
 	}
 }

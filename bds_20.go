@@ -2,18 +2,18 @@ package modesdecoder
 
 type BDS20 struct{}
 
-func (bds *BDS20) Is(bin []uint8) bool {
-	if Allzeros(bin) {
+func (bds *BDS20) Is(bits *Bits) bool {
+	if Allzeros(bits) {
 		return false
 	}
 
-	d := Data(bin)
+	d := Data(bits)
 
-	if BinToString(d[0:8]) != "00100000" {
+	if d.String(0, 8) != "00100000" {
 		return false
 	}
 
-	for _, ch := range bds.CS(bin) {
+	for _, ch := range bds.CS(bits) {
 		if ch == '#' {
 			return true
 		}
@@ -22,18 +22,18 @@ func (bds *BDS20) Is(bin []uint8) bool {
 	return true
 }
 
-func (BDS20) CS(bin []uint8) string {
-	d := Data(bin)
+func (BDS20) CS(bits *Bits) string {
+	d := Data(bits)
 
 	var cs string
-	cs += string(chars[BinToInt(d[8:14])])
-	cs += string(chars[BinToInt(d[14:20])])
-	cs += string(chars[BinToInt(d[20:26])])
-	cs += string(chars[BinToInt(d[26:32])])
-	cs += string(chars[BinToInt(d[32:38])])
-	cs += string(chars[BinToInt(d[38:44])])
-	cs += string(chars[BinToInt(d[44:50])])
-	cs += string(chars[BinToInt(d[50:56])])
+	cs += string(chars[d.Int64(8,14)])
+	cs += string(chars[d.Int64(14, 20)])
+	cs += string(chars[d.Int64(20, 26)])
+	cs += string(chars[d.Int64(26, 32)])
+	cs += string(chars[d.Int64(32, 38)])
+	cs += string(chars[d.Int64(38, 44)])
+	cs += string(chars[d.Int64(44, 50)])
+	cs += string(chars[d.Int64(50, 56)])
 
 	return cs
 }

@@ -10,7 +10,7 @@ func TestBDS09_AirborneVelocity(t *testing.T) {
 
 	bds := BDS09{}
 
-	speed, track, rocd, tag, err := bds.AirborneVelocity(msg.GetBin())
+	speed, track, rocd, tag, err := bds.AirborneVelocity(msg.Bin)
 	if err != nil {
 		t.Error(err)
 		return

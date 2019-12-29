@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
-	"modesdecoder"
+	"github.com/konrin/modesdecoder"
 	"time"
 )
 
 func main() {
 
-	decoder := modesdecoder.NewDecoder(modesdecoder.CACHE_TTL)
+	decoder := modesdecoder.NewDecoder(modesdecoder.CacheTtl)
 
 	_ = decoder
 

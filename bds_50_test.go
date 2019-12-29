@@ -14,7 +14,7 @@ func TestBDS50_Roll(t *testing.T) {
 	} {
 		msg := NewMessage(m, time.Now())
 
-		val := bds.Roll(msg.GetBin())
+		val := bds.Roll(msg.Bin)
 		if val != v {
 			t.Error()
 		}
@@ -26,7 +26,7 @@ func TestBDS50_TRK(t *testing.T) {
 
 	bds := BDS50{}
 
-	val := bds.TRK(msg.GetBin())
+	val := bds.TRK(msg.Bin)
 	if val != 114.258 {
 		t.Error()
 	}
@@ -37,7 +37,7 @@ func TestBDS50_GS(t *testing.T) {
 
 	bds := BDS50{}
 
-	val := bds.GS(msg.GetBin())
+	val := bds.GS(msg.Bin)
 	if val != 438 {
 		t.Error()
 	}
@@ -48,7 +48,7 @@ func TestBDS50_RTRK(t *testing.T) {
 
 	bds := BDS50{}
 
-	val := bds.RTRK(msg.GetBin())
+	val := bds.RTRK(msg.Bin)
 	if val != .125 {
 		t.Error()
 	}
@@ -59,7 +59,7 @@ func TestBDS50_TAS(t *testing.T) {
 
 	bds := BDS50{}
 
-	val := bds.TAS(msg.GetBin())
+	val := bds.TAS(msg.Bin)
 	if val != 424 {
 		t.Error()
 	}

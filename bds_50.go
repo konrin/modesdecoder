@@ -2,12 +2,12 @@ package modesdecoder
 
 type BDS50 struct{}
 
-func (BDS50) Is(bin []uint8) bool {
-	if Allzeros(bin) {
+func (BDS50) Is(bits *Bits) bool {
+	if Allzeros(bits) {
 		return false
 	}
 
-	d := Data(bin)
+	d := Data(bits)
 
 	if Wrongstatus(d, 1, 3, 11) {
 		return false
@@ -32,16 +32,16 @@ func (BDS50) Is(bin []uint8) bool {
 	return true
 }
 
-func (BDS50) Roll(bin []uint8) float32 {
-	d := Data(bin)
+func (BDS50) Roll(bits *Bits) float32 {
+	d := Data(bits)
 
-	if d[0] == 0 {
+	if d.At(0) == 0 {
 		return 0
 	}
 
-	val := BinToInt(d[2:11])
+	val := d.Int64(2, 11)
 
-	if d[1] > 0 {
+	if d.At(1) > 0 {
 		val = val - 512
 	}
 
@@ -50,16 +50,16 @@ func (BDS50) Roll(bin []uint8) float32 {
 	return float32(Round(angle, .5, 1))
 }
 
-func (BDS50) TRK(bin []uint8) float32 {
-	d := Data(bin)
+func (BDS50) TRK(bits *Bits) float32 {
+	d := Data(bits)
 
-	if d[11] == 0 {
+	if d.At(11) == 0 {
 		return 0
 	}
 
-	val := BinToInt(d[13:23])
+	val := d.Int64(13, 23)
 
-	if d[12] > 0 {
+	if d.At(12) > 0 {
 		val = val - 1024
 	}
 
@@ -71,30 +71,30 @@ func (BDS50) TRK(bin []uint8) float32 {
 	return float32(Round(trk, .5, 3))
 }
 
-func (BDS50) GS(bin []uint8) int {
-	d := Data(bin)
+func (BDS50) GS(bits *Bits) int {
+	d := Data(bits)
 
-	if d[23] == 0 {
+	if d.At(23) == 0 {
 		return 0
 	}
 
-	return int(BinToInt(d[24:34]) * 2)
+	return int(d.Int64(24,34) * 2)
 }
 
-func (BDS50) RTRK(bin []uint8) float32 {
-	d := Data(bin)
+func (BDS50) RTRK(bits *Bits) float32 {
+	d := Data(bits)
 
-	if d[34] == 0 {
+	if d.At(34) == 0 {
 		return 0
 	}
 
-	if BinToString(d[36:45]) == "111111111" {
+	if d.String(36, 45) == "111111111" {
 		return 0
 	}
 
-	val := float64(BinToInt(d[36:45]))
+	val := float64(d.Int64(36, 45))
 
-	if d[35] > 0 {
+	if d.At(35) > 0 {
 		val = val - 512
 	}
 
@@ -103,11 +103,11 @@ func (BDS50) RTRK(bin []uint8) float32 {
 	return float32(Round(angle, .5, 3))
 }
 
-func (BDS50) TAS(bin []uint8) int {
-	d := Data(bin)
-	if d[45] == 0 {
+func (BDS50) TAS(bits *Bits) int {
+	d := Data(bits)
+	if d.At(45) == 0 {
 		return 0
 	}
 
-	return int(BinToInt(d[46:56]) * 2)
+	return int(d.Int64(46, 56) * 2)
 }

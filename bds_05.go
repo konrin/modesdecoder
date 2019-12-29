@@ -19,8 +19,8 @@ func (BDS05) AirbornePosition(binEven []uint8, timeEven time.Time, binOdd []uint
 
 	j := math.Floor(59*cprlatEven - 60*cprlatOdd + 0.5)
 
-	latEven := (airDLatEven * (Mod(j, 60) + cprlatEven))
-	latOdd := (airDLatOdd * (Mod(j, 59) + cprlatOdd))
+	latEven := airDLatEven * (Mod(j, 60) + cprlatEven)
+	latOdd := airDLatOdd * (Mod(j, 59) + cprlatOdd)
 
 	if latEven >= 270 {
 		latEven = latEven - 360

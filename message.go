@@ -6,7 +6,7 @@ import (
 
 type Message struct {
 	Hex       string
-	Bin       []uint8
+	Bin       *Bits
 	ReceiptAt time.Time
 
 	DF   uint
@@ -38,12 +38,16 @@ type Message struct {
 }
 
 func NewMessage(msg string, receiptAt time.Time) *Message {
-	bin := Hex2Bin(msg)
-	df := uint(BinToInt(bin[0:5]))
+	bits, err := ParseHex(msg)
+	if err != nil {
+		return nil
+	}
+
+	df := bits.Uint(0, 5)
 
 	m := &Message{
 		Hex:       msg,
-		Bin:       bin,
+		Bin:       bits,
 		ReceiptAt: receiptAt,
 		DF:        df,
 	}
@@ -51,16 +55,13 @@ func NewMessage(msg string, receiptAt time.Time) *Message {
 	m.ICAO = ICAO(m)
 
 	if df == 17 || df == 18 {
-		m.TC = TypeCode(bin)
-		m.OE = OEFlag(bin)
+		m.TC = TypeCode(bits)
+		m.OE = OEFlag(bits)
 	}
 
 	return m
 }
 
 func (m *Message) GetBin() []uint8 {
-	newBin := make([]uint8, len(m.Bin))
-	copy(newBin, m.Bin)
-
-	return newBin
+	return m.Bin.Raw()
 }

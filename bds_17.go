@@ -8,27 +8,27 @@ var AllBDS = []string{
 
 type BDS17 struct{}
 
-func (BDS17) Is(bin []uint8) bool {
-	if Allzeros(bin) {
+func (BDS17) Is(bits *Bits) bool {
+	if Allzeros(bits) {
 		return false
 	}
 
-	d := Data(bin)
+	d := Data(bits)
 
-	if BinToInt(d[28:56]) != 0 {
+	if !d.IsZero(28,56) {
 		return false
 	}
 
 	return true
 }
 
-func (BDS17) Cap(bin []uint8) []string {
-	d := Data(bin)
+func (BDS17) Cap(bits *Bits) []string {
+	d := Data(bits)
 
 	capacity := []string{}
 
 	idx := []int{}
-	for i, v := range d[0:28] {
+	for i, v := range d.String(0,28) {
 		if v == 1 {
 			idx = append(idx, i)
 		}

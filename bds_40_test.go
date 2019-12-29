@@ -10,7 +10,7 @@ func TestBDS40_Alt(t *testing.T) {
 
 	bds := BDS40{}
 
-	if mcp, fms := bds.Alt(msg.GetBin()); mcp != 3008 || fms != 3008 {
+	if mcp, fms := bds.Alt(msg.Bin); mcp != 3008 || fms != 3008 {
 		t.Error("Номер рейса не распарсен")
 	}
 }
@@ -20,7 +20,7 @@ func TestBDS40_Baro(t *testing.T) {
 
 	bds := BDS40{}
 
-	if b := bds.Baro(msg.GetBin()); b != 1020.0 {
+	if b := bds.Baro(msg.Bin); b != 1020.0 {
 		t.Error("Номер рейса не распарсен")
 	}
 }
