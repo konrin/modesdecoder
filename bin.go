@@ -128,3 +128,7 @@ func (b *Bits) slice(from, to int) []uint8 {
 	}
 	return b.bits[from:to]
 }
+
+func (b *Bits) Copy() *Bits {
+	return &Bits{bits: b.Raw()}
+}

@@ -9,13 +9,11 @@ type Message struct {
 	Bin       *Bits
 	ReceiptAt time.Time
 
-	DF   uint
-	TC   uint
-	OE   bool
-	ICAO string
-	// высота
+	DF       uint
+	TC       uint
+	OE       bool
+	ICAO     string
 	Altitude int
-	// позывной
 	Callsign string
 	Category uint
 	Speed    float64

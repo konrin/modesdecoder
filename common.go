@@ -9,22 +9,22 @@ import (
 
 var (
 	hexToBinLookup = map[rune][]uint8{
-		'0': []uint8{0, 0, 0, 0},
-		'1': []uint8{0, 0, 0, 1},
-		'2': []uint8{0, 0, 1, 0},
-		'3': []uint8{0, 0, 1, 1},
-		'4': []uint8{0, 1, 0, 0},
-		'5': []uint8{0, 1, 0, 1},
-		'6': []uint8{0, 1, 1, 0},
-		'7': []uint8{0, 1, 1, 1},
-		'8': []uint8{1, 0, 0, 0},
-		'9': []uint8{1, 0, 0, 1},
-		'a': []uint8{1, 0, 1, 0},
-		'b': []uint8{1, 0, 1, 1},
-		'c': []uint8{1, 1, 0, 0},
-		'd': []uint8{1, 1, 0, 1},
-		'e': []uint8{1, 1, 1, 0},
-		'f': []uint8{1, 1, 1, 1},
+		'0': {0, 0, 0, 0},
+		'1': {0, 0, 0, 1},
+		'2': {0, 0, 1, 0},
+		'3': {0, 0, 1, 1},
+		'4': {0, 1, 0, 0},
+		'5': {0, 1, 0, 1},
+		'6': {0, 1, 1, 0},
+		'7': {0, 1, 1, 1},
+		'8': {1, 0, 0, 0},
+		'9': {1, 0, 0, 1},
+		'a': {1, 0, 1, 0},
+		'b': {1, 0, 1, 1},
+		'c': {1, 1, 0, 0},
+		'd': {1, 1, 0, 1},
+		'e': {1, 1, 1, 0},
+		'f': {1, 1, 1, 1},
 	}
 	crcGenerator = [25]uint8{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1}
 	chars        = "#ABCDEFGHIJKLMNOPQRSTUVWXYZ#####_###############0123456789######"
@@ -97,27 +97,29 @@ func HexToInt(hex string) int64 {
 }
 
 func CRC(bits *Bits, encode bool) []uint8 {
+	copyBits := bits.Copy()
+
 	if encode {
-		bits = bits.Slice(0, bits.Len()-24)
+		copyBits = copyBits.Slice(0, bits.Len()-24)
 
 		for i := 0; i < 24; i++ {
-			bits = bits.Add(0)
+			copyBits = copyBits.Add(0)
 		}
 	}
 
-	for i := 0; i < bits.Len()-24; i++ {
-		if bits.At(i) != 1 {
+	for i := 0; i < copyBits.Len()-24; i++ {
+		if copyBits.At(i) != 1 {
 			continue
 		}
 
 		for ci, cv := range crcGenerator {
-			vi := bits.At(i + ci)
+			vi := copyBits.At(i + ci)
 
-			bits.Set(i+ci, vi^cv)
+			copyBits.Set(i+ci, vi^cv)
 		}
 	}
 
-	return bits.Slice(bits.Len()-24, bits.Len()).Raw()
+	return copyBits.Slice(copyBits.Len()-24, copyBits.Len()).Raw()
 }
 
 func Gray2Int(graystr []uint8) int64 {

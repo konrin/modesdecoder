@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/konrin/modesdecoder"
 	"time"
+
+	"github.com/konrin/modesdecoder"
 )
 
 func main() {
@@ -21,26 +22,26 @@ func main() {
 			continue
 		}
 
-		fmt.Printf("%d (%s), %s, %s, %d, (%f, %f), %f, %f, %d, %s, %d | %f, %d, %f, %f, %d\n",
-			msg.DF,
-			msg.Squawk,
-			msg.ICAO,
-			msg.Callsign,
-			msg.Category,
-			msg.Lat,
-			msg.Lon,
-			msg.Speed,
-			msg.Track,
-			msg.Rocd,
-			msg.Tag,
-			msg.Altitude,
-			msg.Roll,
-			msg.GS,
-			msg.Trk,
-			msg.Rtrk,
-			msg.Tas,
-		)
-		//fmt.Printf("%+v\n", msg)
+		// fmt.Printf("%d (%s), %s, %s, %d, (%f, %f), %f, %f, %d, %s, %d | %f, %d, %f, %f, %d\n",
+		// 	msg.DF,
+		// 	msg.Squawk,
+		// 	msg.ICAO,
+		// 	msg.Callsign,
+		// 	msg.Category,
+		// 	msg.Lat,
+		// 	msg.Lon,
+		// 	msg.Speed,
+		// 	msg.Track,
+		// 	msg.Rocd,
+		// 	msg.Tag,
+		// 	msg.Altitude,
+		// 	msg.Roll,
+		// 	msg.GS,
+		// 	msg.Trk,
+		// 	msg.Rtrk,
+		// 	msg.Tas,
+		// )
+		fmt.Printf("%+v\n\n", msg)
 	}
 }
 

@@ -3,7 +3,6 @@ package modesdecoder
 type BDS44 struct{}
 
 func (bds BDS44) Is(bits *Bits) bool {
-
 	if Allzeros(bits) {
 		return false
 	}
