@@ -6,7 +6,7 @@ import (
 )
 
 func TestBDS08_Callsign(t *testing.T) {
-	msg := NewMessage("8D406B902015A678D4D220AA4BDA", time.Now())
+	msg, _ := NewMessage("8D406B902015A678D4D220AA4BDA", time.Now())
 
 	bds := BDS08{}
 

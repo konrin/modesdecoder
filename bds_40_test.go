@@ -6,7 +6,7 @@ import (
 )
 
 func TestBDS40_Alt(t *testing.T) {
-	msg := NewMessage("A000029C85E42F313000007047D3", time.Now())
+	msg, _ := NewMessage("A000029C85E42F313000007047D3", time.Now())
 
 	bds := BDS40{}
 
@@ -16,7 +16,7 @@ func TestBDS40_Alt(t *testing.T) {
 }
 
 func TestBDS40_Baro(t *testing.T) {
-	msg := NewMessage("A000029C85E42F313000007047D3", time.Now())
+	msg, _ := NewMessage("A000029C85E42F313000007047D3", time.Now())
 
 	bds := BDS40{}
 

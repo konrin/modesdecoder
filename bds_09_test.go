@@ -6,7 +6,7 @@ import (
 )
 
 func TestBDS09_AirborneVelocity(t *testing.T) {
-	msg := NewMessage("8D485020994409940838175B284F", time.Now())
+	msg, _ := NewMessage("8D485020994409940838175B284F", time.Now())
 
 	bds := BDS09{}
 

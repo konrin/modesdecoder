@@ -6,7 +6,7 @@ import (
 )
 
 func TestBDS02_CS(t *testing.T) {
-	msg := NewMessage("A000083E202CC371C31DE0AA1CCF", time.Now())
+	msg, _ := NewMessage("A000083E202CC371C31DE0AA1CCF", time.Now())
 
 	bds := BDS20{}
 

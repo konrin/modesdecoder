@@ -1,6 +1,7 @@
 package modesdecoder
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -35,10 +36,15 @@ type Message struct {
 	IsAirborn bool
 }
 
-func NewMessage(msg string, receiptAt time.Time) *Message {
+func NewMessage(msg string, receiptAt time.Time) (*Message, error) {
+	msgLen := len(msg)
+	if msgLen != 14 && msgLen != 28 {
+		return nil, fmt.Errorf("Incorrect message length: %d", msgLen)
+	}
+
 	bits, err := ParseHex(msg)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
 	df := bits.Uint(0, 5)
@@ -57,7 +63,7 @@ func NewMessage(msg string, receiptAt time.Time) *Message {
 		m.OE = OEFlag(bits)
 	}
 
-	return m
+	return m, nil
 }
 
 func (m *Message) GetBin() []uint8 {

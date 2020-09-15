@@ -6,8 +6,8 @@ import (
 )
 
 func TestBDS05_AirbornePosition(t *testing.T) {
-	msgEven := NewMessage("8D40058B58C904A87F402D3B8C59", time.Now())
-	msgOdd := NewMessage("8D40058B58C901375147EFD09357", time.Now().Add(time.Second*5))
+	msgEven, _ := NewMessage("8D40058B58C904A87F402D3B8C59", time.Now())
+	msgOdd, _ := NewMessage("8D40058B58C901375147EFD09357", time.Now().Add(time.Second*5))
 
 	bds := BDS05{}
 
@@ -51,7 +51,7 @@ func TestBDS05_PositionRef(t *testing.T) {
 	bds := BDS05{}
 
 	for _, pos := range list {
-		msg := NewMessage(pos.Message, time.Now())
+		msg, _ := NewMessage(pos.Message, time.Now())
 
 		lat, lon, err := bds.AirbornePositionWithRef(msg.GetBin(), msg.OE, pos.Lat, pos.Lon)
 		if err != nil {
@@ -66,7 +66,7 @@ func TestBDS05_PositionRef(t *testing.T) {
 }
 
 func TestBDS05_Altitude(t *testing.T) {
-	msg := NewMessage("8D40058B58C901375147EFD09357", time.Now())
+	msg, _ := NewMessage("8D40058B58C901375147EFD09357", time.Now())
 
 	bds := BDS05{}
 
