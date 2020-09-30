@@ -1,16 +1,18 @@
-package modesdecoder
+package decoder
 
 import (
 	"testing"
 	"time"
+
+	"github.com/konrin/modesdecoder/pkg/common"
 )
 
 func TestBDS09_AirborneVelocity(t *testing.T) {
-	msg, _ := NewMessage("8D485020994409940838175B284F", time.Now())
+	msg, _ := common.NewMessage("8D485020994409940838175B284F", time.Now())
 
 	bds := BDS09{}
 
-	speed, track, rocd, tag, err := bds.AirborneVelocity(msg.Bin)
+	speed, track, rocd, tag, err := bds.AirborneVelocity(msg.GetBin())
 	if err != nil {
 		t.Error(err)
 		return

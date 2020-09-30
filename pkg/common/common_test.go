@@ -1,4 +1,4 @@
-package modesdecoder
+package common
 
 import (
 	"testing"
@@ -17,7 +17,7 @@ func TestHexToBin(t *testing.T) {
 func TestCRCDecode(t *testing.T) {
 	m, _ := NewMessage("8D406B902015A678D4D220AA4BDA", time.Now())
 
-	checksum := CRC(m.Bin, false)
+	checksum := CRC(m.GetBin(), false)
 
 	if BinToString(checksum) != "000000000000000000000000" {
 		t.Errorf("oops")
@@ -27,7 +27,7 @@ func TestCRCDecode(t *testing.T) {
 func TestCRCEncode(t *testing.T) {
 	m, _ := NewMessage("8D406B902015A678D4D220AA4BDA", time.Now())
 
-	checksum := CRC(m.Bin, true)
+	checksum := CRC(m.GetBin(), true)
 
 	b := Hex2Bin("AA4BDA")
 
@@ -59,7 +59,7 @@ func TestICAO(t *testing.T) {
 func TestModeSAltcode(t *testing.T) {
 	m, _ := NewMessage("A02014B400000000000000F9D514", time.Now())
 
-	code, err := AltCode(m.Bin)
+	code, err := AltCode(m.GetBin())
 	if err != nil {
 		t.Error(err)
 		return
@@ -73,7 +73,7 @@ func TestModeSAltcode(t *testing.T) {
 func TestModeSIdCode(t *testing.T) {
 	m, _ := NewMessage("A800292DFFBBA9383FFCEB903D01", time.Now())
 
-	code := IDCODE(m.Bin)
+	code := IDCODE(m.GetBin())
 	if code != "1346" {
 		t.Errorf("%s %s", code, "1346")
 	}

@@ -1,3 +1,3 @@
 module github.com/konrin/modesdecoder
 
-go 1.13
+go 1.15

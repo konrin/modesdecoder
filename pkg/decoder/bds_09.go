@@ -1,15 +1,17 @@
-package modesdecoder
+package decoder
 
 import (
 	"math"
+
+	"github.com/konrin/modesdecoder/pkg/common"
 )
 
 type BDS09 struct{}
 
-func (m *BDS09) AirborneVelocity(bits *Bits) (spd float64, track float64, rocd int, tag string, err error) {
-	subType := bits.Int64(37,40)
+func (m *BDS09) AirborneVelocity(bits *common.Bits) (spd float64, track float64, rocd int, tag string, err error) {
+	subType := bits.Int64(37, 40)
 
-	if bits.IsZero(46,56) || bits.IsZero(57,67) {
+	if bits.IsZero(46, 56) || bits.IsZero(57, 67) {
 		return
 	}
 
@@ -52,11 +54,11 @@ func (m *BDS09) AirborneVelocity(bits *Bits) (spd float64, track float64, rocd i
 		vrSign = -1
 	}
 
-	vr := int((bits.Int64(69,78) - 1) * 64)
+	vr := int((bits.Int64(69, 78) - 1) * 64)
 	rocd = vrSign * vr
 
-	spd = Round(spd, .5, 1)
-	track = Round(track, .5, 1)
+	spd = common.Round(spd, .5, 1)
+	track = common.Round(track, .5, 1)
 
 	return
 }

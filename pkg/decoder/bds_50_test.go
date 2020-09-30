@@ -1,8 +1,10 @@
-package modesdecoder
+package decoder
 
 import (
 	"testing"
 	"time"
+
+	"github.com/konrin/modesdecoder/pkg/common"
 )
 
 func TestBDS50_Roll(t *testing.T) {
@@ -12,9 +14,9 @@ func TestBDS50_Roll(t *testing.T) {
 		"A000139381951536E024D4CCF6B5": 2.1,
 		"A0001691FFD263377FFCE02B2BF9": -0.4,
 	} {
-		msg, _ := NewMessage(m, time.Now())
+		msg, _ := common.NewMessage(m, time.Now())
 
-		val := bds.Roll(msg.Bin)
+		val := bds.Roll(msg.GetBin())
 		if val != v {
 			t.Error()
 		}
@@ -22,44 +24,44 @@ func TestBDS50_Roll(t *testing.T) {
 }
 
 func TestBDS50_TRK(t *testing.T) {
-	msg, _ := NewMessage("A000139381951536E024D4CCF6B5", time.Now())
+	msg, _ := common.NewMessage("A000139381951536E024D4CCF6B5", time.Now())
 
 	bds := BDS50{}
 
-	val := bds.TRK(msg.Bin)
+	val := bds.TRK(msg.GetBin())
 	if val != 114.258 {
 		t.Error()
 	}
 }
 
 func TestBDS50_GS(t *testing.T) {
-	msg, _ := NewMessage("A000139381951536E024D4CCF6B5", time.Now())
+	msg, _ := common.NewMessage("A000139381951536E024D4CCF6B5", time.Now())
 
 	bds := BDS50{}
 
-	val := bds.GS(msg.Bin)
+	val := bds.GS(msg.GetBin())
 	if val != 438 {
 		t.Error()
 	}
 }
 
 func TestBDS50_RTRK(t *testing.T) {
-	msg, _ := NewMessage("A000139381951536E024D4CCF6B5", time.Now())
+	msg, _ := common.NewMessage("A000139381951536E024D4CCF6B5", time.Now())
 
 	bds := BDS50{}
 
-	val := bds.RTRK(msg.Bin)
+	val := bds.RTRK(msg.GetBin())
 	if val != .125 {
 		t.Error()
 	}
 }
 
 func TestBDS50_TAS(t *testing.T) {
-	msg, _ := NewMessage("A000139381951536E024D4CCF6B5", time.Now())
+	msg, _ := common.NewMessage("A000139381951536E024D4CCF6B5", time.Now())
 
 	bds := BDS50{}
 
-	val := bds.TAS(msg.Bin)
+	val := bds.TAS(msg.GetBin())
 	if val != 424 {
 		t.Error()
 	}

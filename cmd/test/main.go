@@ -8,7 +8,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/konrin/modesdecoder"
+	"github.com/konrin/modesdecoder/pkg/common"
+	"github.com/konrin/modesdecoder/pkg/decoder"
 )
 
 func main() {
@@ -20,7 +21,7 @@ func main() {
 		log.Fatalln("Msg file not found")
 	}
 
-	decoder := modesdecoder.NewDecoder(modesdecoder.CacheTtl)
+	decoder := decoder.NewDecoder(decoder.CacheTTL)
 
 	file, err := os.Open(msgFilePath)
 	if err != nil {
@@ -47,7 +48,7 @@ func main() {
 			continue
 		}
 
-		msg, err := modesdecoder.NewMessage(m, time.Now())
+		msg, err := common.NewMessage(m, time.Now())
 		if err != nil {
 			println(err.Error())
 			continue

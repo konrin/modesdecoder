@@ -1,4 +1,6 @@
-package modesdecoder
+package decoder
+
+import "github.com/konrin/modesdecoder/pkg/common"
 
 var AllBDS = []string{
 	"05", "06", "07", "08", "09", "0A", "20", "21", "40", "41",
@@ -8,27 +10,27 @@ var AllBDS = []string{
 
 type BDS17 struct{}
 
-func (BDS17) Is(bits *Bits) bool {
-	if Allzeros(bits) {
+func (BDS17) Is(bits *common.Bits) bool {
+	if common.Allzeros(bits) {
 		return false
 	}
 
-	d := Data(bits)
+	d := common.Data(bits)
 
-	if !d.IsZero(28,56) {
+	if !d.IsZero(28, 56) {
 		return false
 	}
 
 	return true
 }
 
-func (BDS17) Cap(bits *Bits) []string {
-	d := Data(bits)
+func (BDS17) Cap(bits *common.Bits) []string {
+	d := common.Data(bits)
 
 	capacity := []string{}
 
 	idx := []int{}
-	for i, v := range d.String(0,28) {
+	for i, v := range d.String(0, 28) {
 		if v == 1 {
 			idx = append(idx, i)
 		}

@@ -1,17 +1,19 @@
-package modesdecoder
+package decoder
 
 import (
 	"testing"
 	"time"
+
+	"github.com/konrin/modesdecoder/pkg/common"
 )
 
 func TestBDS05_AirbornePosition(t *testing.T) {
-	msgEven, _ := NewMessage("8D40058B58C904A87F402D3B8C59", time.Now())
-	msgOdd, _ := NewMessage("8D40058B58C901375147EFD09357", time.Now().Add(time.Second*5))
+	msgEven, _ := common.NewMessage("8D40058B58C904A87F402D3B8C59", time.Now())
+	msgOdd, _ := common.NewMessage("8D40058B58C901375147EFD09357", time.Now().Add(time.Second*5))
 
 	bds := BDS05{}
 
-	lat, lon, err := bds.AirbornePosition(msgEven.GetBin(), msgEven.ReceiptAt, msgOdd.GetBin(), msgOdd.ReceiptAt)
+	lat, lon, err := bds.AirbornePosition(msgEven.GetBinRaw(), msgEven.ReceiptAt, msgOdd.GetBinRaw(), msgOdd.ReceiptAt)
 	if err != nil {
 		t.Error(err)
 		return
@@ -32,14 +34,14 @@ func TestBDS05_PositionRef(t *testing.T) {
 	}
 
 	list := []posRef{
-		posRef{
+		{
 			Message: "8D40058B58C901375147EFD09357",
 			Lat:     49.0,
 			Lon:     6.0,
 			ResLat:  49.8241,
 			ResLon:  6.06785,
 		},
-		posRef{
+		{
 			Message: "8D40058B58C904A87F402D3B8C59",
 			Lat:     49.0,
 			Lon:     6.0,
@@ -51,9 +53,9 @@ func TestBDS05_PositionRef(t *testing.T) {
 	bds := BDS05{}
 
 	for _, pos := range list {
-		msg, _ := NewMessage(pos.Message, time.Now())
+		msg, _ := common.NewMessage(pos.Message, time.Now())
 
-		lat, lon, err := bds.AirbornePositionWithRef(msg.GetBin(), msg.OE, pos.Lat, pos.Lon)
+		lat, lon, err := bds.AirbornePositionWithRef(msg.GetBinRaw(), msg.OE, pos.Lat, pos.Lon)
 		if err != nil {
 			t.Error(err)
 			return
@@ -66,11 +68,11 @@ func TestBDS05_PositionRef(t *testing.T) {
 }
 
 func TestBDS05_Altitude(t *testing.T) {
-	msg, _ := NewMessage("8D40058B58C901375147EFD09357", time.Now())
+	msg, _ := common.NewMessage("8D40058B58C901375147EFD09357", time.Now())
 
 	bds := BDS05{}
 
-	if alt, err := bds.Altitude(msg.GetBin(), 18); err != nil || alt != 39000 {
+	if alt, err := bds.Altitude(msg.GetBinRaw(), 18); err != nil || alt != 39000 {
 		if err != nil {
 			t.Error(err)
 			return

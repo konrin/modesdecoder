@@ -1,4 +1,4 @@
-package modesdecoder
+package common
 
 import (
 	"fmt"
@@ -27,10 +27,8 @@ var (
 		'f': {1, 1, 1, 1},
 	}
 	crcGenerator = [25]uint8{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1}
-	chars        = "#ABCDEFGHIJKLMNOPQRSTUVWXYZ#####_###############0123456789######"
+	Chars        = "#ABCDEFGHIJKLMNOPQRSTUVWXYZ#####_###############0123456789######"
 )
-
-type Common struct{}
 
 func Hex2Bin(hex string) []uint8 {
 	bin := []uint8{}
@@ -178,18 +176,18 @@ func CprNL(lat float64) float64 {
 	return math.Floor(nl)
 }
 
-func ICAO(msg *Message) string {
+func ICAO(msg *Message) string { //df uint, hex string,
 	var addr string
 
 	switch msg.DF {
 	case 11, 17, 18:
-		addr = msg.Hex[2:8]
+		addr = msg.GetHex()[2:8]
 		break
 	case 0, 4, 5, 16, 20, 21, 24:
-		coCrx := CRC(msg.Bin, true)
+		coCrx := CRC(msg.GetBin().Copy(), true)
 
 		c0 := BinToInt(coCrx)
-		c1 := HexToInt(msg.Hex[len(msg.Hex)-6:])
+		c1 := HexToInt(msg.GetHex()[len(msg.GetHex())-6:])
 
 		addr = fmt.Sprintf("%06X", c0^c1)
 		break

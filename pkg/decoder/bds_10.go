@@ -1,13 +1,15 @@
-package modesdecoder
+package decoder
+
+import "github.com/konrin/modesdecoder/pkg/common"
 
 type BDS10 struct{}
 
-func (BDS10) Is(bits *Bits) bool {
-	if Allzeros(bits) {
+func (BDS10) Is(bits *common.Bits) bool {
+	if common.Allzeros(bits) {
 		return false
 	}
 
-	d := Data(bits)
+	d := common.Data(bits)
 
 	if bits.String(0, 8) != "00010000" {
 		return false
@@ -29,6 +31,6 @@ func (BDS10) Is(bits *Bits) bool {
 }
 
 // OVC returning whether the transponder is OVC capable
-func (BDS10) OVC(bits *Bits) int {
-	return int(Data(bits).At(14))
+func (BDS10) OVC(bits *common.Bits) int {
+	return int(common.Data(bits).At(14))
 }
