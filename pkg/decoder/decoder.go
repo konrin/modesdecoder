@@ -16,6 +16,9 @@ type Decoder struct {
 	BDS06 BDS06
 	BDS08 BDS08
 	BDS09 BDS09
+	BDS10 BDS10
+	BDS17 BDS17
+	BDS20 BDS20
 	BDS40 BDS40
 	BDS44 BDS44
 	BDS50 BDS50
@@ -84,6 +87,9 @@ func NewDecoder(cacheTTL time.Duration) *Decoder {
 		BDS06: BDS06{},
 		BDS08: BDS08{},
 		BDS09: BDS09{},
+		BDS10: BDS10{},
+		BDS17: BDS17{},
+		BDS20: BDS20{},
 		BDS40: BDS40{},
 		BDS44: BDS44{},
 		BDS50: BDS50{},
@@ -108,7 +114,7 @@ func (d *Decoder) Decode(msg *common.Message) error {
 
 	if msg.DF == 4 || msg.DF == 20 {
 		// Altitude code
-		msg.Altitude, err = common.AltCode(msg.GetBin())
+		msg.AltitudeMcpFcu, err = common.AltCode(msg.GetBin())
 		if err != nil {
 			return err
 		}
@@ -140,6 +146,15 @@ func (d *Decoder) decodeAdsB(msg *common.Message) error {
 	if msg.TC >= 9 && msg.TC <= 18 {
 		// BDS 0,5 Airborne position
 		msg.BdsCode = common.BdsCode0_5
+		msg.IsAirborn = true
+
+		defer func() {
+			if msg.OE {
+				posInfo.SetEvenMsg(msg)
+			} else {
+				posInfo.SetOddMsg(msg)
+			}
+		}()
 
 		if posInfo.HasPosition() {
 			msg.Lat, msg.Lon, err = d.BDS05.AirbornePositionWithRef(
@@ -180,15 +195,9 @@ func (d *Decoder) decodeAdsB(msg *common.Message) error {
 			}
 		}
 
-		if msg.OE {
-			posInfo.SetEvenMsg(msg)
-		} else {
-			posInfo.SetOddMsg(msg)
-		}
-
 		posInfo.SetPosition(msg.Lat, msg.Lon)
 
-		msg.Altitude, err = d.BDS05.Altitude(msg.GetBinRaw(), msg.TC)
+		msg.AltitudeMcpFcu, err = d.BDS05.Altitude(msg.GetBinRaw(), msg.TC)
 		if err != nil {
 			return err
 		}
@@ -197,6 +206,7 @@ func (d *Decoder) decodeAdsB(msg *common.Message) error {
 	if msg.TC >= 5 && msg.TC <= 8 {
 		// BDS 0,6 Surface position
 		msg.BdsCode = common.BdsCode0_8
+		msg.IsAirborn = false
 
 		// TODO
 	}
@@ -238,9 +248,37 @@ func (d *Decoder) decodeAdsB(msg *common.Message) error {
 func (d *Decoder) decodeCommB(msg *common.Message) error {
 	msg.BdsType = common.BdsTypeCommB
 
+	if d.BDS10.Is(msg.GetBin()) {
+		msg.BdsCode = common.BdsCode1_0
+
+		msg.OVC = d.BDS10.OVC(msg.GetBin())
+	}
+
+	if d.BDS17.Is(msg.GetBin()) {
+		msg.BdsCode = common.BdsCode1_7
+
+		msg.Capacity = d.BDS17.Cap(msg.GetBin())
+	}
+
+	if d.BDS20.Is(msg.GetBin()) {
+		msg.BdsCode = common.BdsCode2_0
+
+		msg.Callsign = d.BDS20.CS(msg.GetBin())
+	}
+
 	if d.BDS40.Is(msg.GetBin()) {
 		msg.BdsCode = common.BdsCode4_0
-		msg.Altitude, _ = d.BDS40.Alt(msg.GetBin())
+		msg.AltitudeMcpFcu, msg.AltitudeFms = d.BDS40.Alt(msg.GetBin())
+		msg.Baro = d.BDS40.Baro(msg.GetBin())
+	}
+
+	if d.BDS44.Is(msg.GetBin()) {
+		msg.BdsCode = common.BdsCode4_4
+
+		msg.WindSpeed, msg.WindDiraction = d.BDS44.Wind(msg.GetBin())
+		msg.Temp = d.BDS44.Temp(msg.GetBin())
+		msg.Hum = d.BDS44.Hum(msg.GetBin())
+		msg.Pressure = d.BDS44.Pressure(msg.GetBin())
 	}
 
 	if d.BDS50.Is(msg.GetBin()) {
@@ -257,6 +295,7 @@ func (d *Decoder) decodeCommB(msg *common.Message) error {
 
 func (d *Decoder) GetAircraftPositionFromCache(icao string) *AircraftPositionInfo {
 	d.mu.Lock()
+	defer d.mu.Unlock()
 
 	info, ok := d.cachePosition[icao]
 	if !ok {
@@ -272,8 +311,6 @@ func (d *Decoder) GetAircraftPositionFromCache(icao string) *AircraftPositionInf
 	}
 
 	d.cachePosition[icao] = info
-
-	d.mu.Unlock()
 
 	return info
 }

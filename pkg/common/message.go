@@ -57,19 +57,30 @@ type Message struct {
 	TC uint
 	OE bool
 
-	ICAO     string
-	Altitude int
-	Callsign string
-	Category uint
-	Speed    float64
-	Track    float64
-	Tag      string
-	Rocd     int
+	ICAO           string
+	AltitudeMcpFcu int
+	AltitudeFms    int
+	Baro           float32
+	Callsign       string
+	Category       uint
+	Speed          float64
+	Track          float64
+	Tag            string
+	Rocd           int
 
 	Squawk string
 
 	Lat,
 	Lon float64
+
+	OVC      int
+	Capacity []string
+
+	WindSpeed,
+	WindDiraction,
+	Temp,
+	Hum float32
+	Pressure int
 
 	Roll float32
 	Trk  float32
@@ -126,21 +137,114 @@ func (m *Message) GetHex() string {
 }
 
 func (m *Message) String() string {
-	var str = "ICAO: %s\nDF: %d\n"
-	var data = []interface{}{m.ICAO, m.DF}
+	type DataMap map[string]interface{}
 
-	// var addData = func(d ...interface{}) []interface{} {
+	var render = func(metaData DataMap, flightData DataMap) string {
+		var format = "ICAO: %s\nTime: %s\nMessage: %s"
+		var data = []interface{}{
+			m.ICAO,
+			m.ReceiptAt.Format(time.RFC3339),
+			m.GetHex(),
+		}
 
-	// }
+		if len(m.BdsType) != 0 {
+			format = format + "\n" + "BDS: %s(%s)"
+			data = append(data, m.BdsType, m.BdsCode)
+		}
 
-	if m.DF == 4 || m.DF == 20 {
-		return fmt.Sprintf(
-			str+"Altitude: %d\n",
-			append(data, m.Altitude)...,
-		)
+		format = format + "\n"
+
+		for key, value := range metaData {
+			format += key + ":%v;"
+			data = append(data, value)
+		}
+
+		format = format + "\n"
+
+		for key, value := range flightData {
+			format += "	" + key + ": %v\n"
+			data = append(data, value)
+		}
+
+		return fmt.Sprintf(format, data...)
 	}
 
-	return ""
+	metaData := DataMap{}
+	flightData := DataMap{}
+
+	if m.DF == 4 || m.DF == 20 {
+		metaData["DF"] = m.DF
+		flightData["Altitude"] = m.AltitudeMcpFcu
+	}
+
+	if m.DF == 17 || m.DF == 18 {
+		metaData["DF"] = m.DF
+		metaData["TC"] = m.TC
+
+		if m.TC >= 1 && m.TC <= 4 {
+			flightData["Callsign"] = m.Callsign
+			flightData["Category"] = m.Category
+		}
+
+		if m.TC >= 9 && m.TC <= 18 {
+			var oe = 0
+			if m.OE {
+				oe = 1
+			}
+
+			metaData["OE"] = oe
+
+			flightData["IsAirborn"] = m.IsAirborn
+			flightData["Lat"] = m.Lat
+			flightData["Lon"] = m.Lon
+			flightData["Altitude"] = m.AltitudeMcpFcu
+		}
+
+		if m.TC == 19 {
+			flightData["Speed"] = m.Speed
+			flightData["Track"] = m.Track
+			flightData["Rocd"] = m.Rocd
+			flightData["Tag"] = m.Tag
+		}
+	}
+
+	if m.DF == 20 || m.DF == 21 {
+		if m.BdsCode == BdsCode1_0 {
+			flightData["OVC"] = m.OVC
+		}
+
+		if m.BdsCode == BdsCode1_7 {
+			flightData["Capacity"] = m.Capacity
+		}
+
+		if m.BdsCode == BdsCode2_0 {
+			flightData["Callsign"] = m.Callsign
+		}
+
+		if m.BdsCode == BdsCode4_0 {
+			flightData["AltitudeMcpFcu"] = m.AltitudeMcpFcu
+			flightData["AltitudeFms"] = m.AltitudeFms
+			flightData["Baro"] = m.Baro
+		}
+
+		if m.BdsCode == BdsCode4_4 {
+			flightData["WindSpeed"] = m.WindSpeed
+			flightData["WindDiraction"] = m.WindDiraction
+			flightData["Temp"] = m.Temp
+			flightData["Hum"] = m.Hum
+			flightData["Pressure"] = m.Pressure
+		}
+
+		if m.BdsCode == BdsCode5_0 {
+			flightData["Roll"] = m.Roll
+			flightData["Trk"] = m.Trk
+			flightData["GS"] = m.GS
+			flightData["Rtrk"] = m.Rtrk
+			flightData["Tas"] = m.Tas
+		}
+	}
+
+	return render(metaData, flightData)
 }
 
 func (m *Message) JSON() string {

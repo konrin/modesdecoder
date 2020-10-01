@@ -44,6 +44,7 @@ func (bds BDS44) Is(bits *common.Bits) bool {
 	return true
 }
 
+// Returns speed and diraction
 func (BDS44) Wind(bits *common.Bits) (float32, float32) {
 	d := common.Data(bits)
 
