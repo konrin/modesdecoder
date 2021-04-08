@@ -6,9 +6,24 @@ import (
 	"github.com/konrin/modesdecoder/pkg/common"
 )
 
+// ADS-B TC=19
+// Aircraft Airborn velocity
 type BDS09 struct{}
 
-func (m *BDS09) AirborneVelocity(bits *common.Bits) (spd float64, track float64, rocd int, tag string, err error) {
+// Decode airborne velocity
+func (m *BDS09) AirborneVelocity(bits *common.Bits) (
+	// Speed (kt)
+	speed float64,
+	// Angle (degree), either ground track or heading
+	track float64,
+	// Vertical rate (ft/min)
+	verticalRate int,
+	// Speed type ('GS' for ground speed, 'AS' for airspeed)
+	speedType string,
+	// Direction source ('TRUE_NORTH' or 'MAGNETIC_NORTH')
+	dirType string,
+	err error,
+) {
 	subType := bits.Int64(37, 40)
 
 	if bits.IsZero(46, 56) || bits.IsZero(57, 67) {
@@ -31,7 +46,7 @@ func (m *BDS09) AirborneVelocity(bits *common.Bits) (spd float64, track float64,
 		vWe := float64(vEwSign * vEw)
 		vSn := float64(vNsSign * vNs)
 
-		spd = math.Sqrt(vSn*vSn + vWe*vWe)
+		speed = math.Sqrt(vSn*vSn + vWe*vWe)
 
 		trk := math.Atan2(vWe, vSn)
 		trk = trk * 180 / math.Pi
@@ -39,13 +54,15 @@ func (m *BDS09) AirborneVelocity(bits *common.Bits) (spd float64, track float64,
 			trk = trk + 360
 		}
 
-		tag = "GS"
+		speedType = "GS"
+		dirType = "TRUE_NORTH"
 		track = trk
 	} else {
 		hdg := float64(bits.Int64(46, 56)) / 1024.0 * 360.0
-		spd = float64(bits.Int64(57, 67))
+		speed = float64(bits.Int64(57, 67))
 
-		tag = "AS"
+		speedType = "AS"
+		dirType = "MAGNETIC_NORTH"
 		track = hdg
 	}
 
@@ -55,9 +72,9 @@ func (m *BDS09) AirborneVelocity(bits *common.Bits) (spd float64, track float64,
 	}
 
 	vr := int((bits.Int64(69, 78) - 1) * 64)
-	rocd = vrSign * vr
+	verticalRate = vrSign * vr
 
-	spd = common.Round(spd, .5, 1)
+	speed = common.Round(speed, .5, 1)
 	track = common.Round(track, .5, 1)
 
 	return

@@ -6,11 +6,11 @@ import (
 	"github.com/konrin/modesdecoder/pkg/common"
 )
 
-// // BDS08 BDS 0,8
-// // ADS-B TC=1-4
-// // Aircraft identitification and category
+// ADS-B TC=1-4
+// Aircraft identitification and category
 type BDS08 struct{}
 
+// Aircraft callsign
 func (BDS08) Callsign(bits *common.Bits) string {
 	csbin := bits.Slice(40, 96)
 
@@ -33,6 +33,7 @@ func (BDS08) Callsign(bits *common.Bits) string {
 	return cs
 }
 
+// Aircraft category number
 func (BDS08) Category(bits *common.Bits) uint {
 	return uint(bits.Int64(5, 8))
 }

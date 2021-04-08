@@ -2,6 +2,7 @@ package decoder
 
 import "github.com/konrin/modesdecoder/pkg/common"
 
+// Aircraft identification
 type BDS20 struct{}
 
 func (bds *BDS20) Is(bits *common.Bits) bool {
@@ -24,6 +25,8 @@ func (bds *BDS20) Is(bits *common.Bits) bool {
 	return true
 }
 
+// Aircraft callsign
+// returns callsign, max. 8 chars
 func (BDS20) CS(bits *common.Bits) string {
 	d := common.Data(bits)
 

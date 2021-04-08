@@ -78,6 +78,6 @@ func TestBDS05_Altitude(t *testing.T) {
 			return
 		}
 
-		t.Error("Высота распарсена не корректно")
+		t.Error("Alt error")
 	}
 }

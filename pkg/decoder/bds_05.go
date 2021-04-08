@@ -8,8 +8,12 @@ import (
 	"github.com/konrin/modesdecoder/pkg/common"
 )
 
+// Airborn position
+// ADS-B TC=9-18
 type BDS05 struct{}
 
+// Decode airborn position from a pair of even and odd position message
+// returns (latitude, longitude) of the aircraft
 func (BDS05) AirbornePosition(binEven []uint8, timeEven time.Time, binOdd []uint8, timeOdd time.Time) (float64, float64, error) {
 	cprlatEven := float64(common.BinToInt(binOdd[54:71])) / 131072.0
 	cprlonEven := float64(common.BinToInt(binOdd[71:88])) / 131072.0
@@ -62,6 +66,11 @@ func (BDS05) AirbornePosition(binEven []uint8, timeEven time.Time, binOdd []uint
 	return lat, lon, nil
 }
 
+// Decode airborne position with only one message,
+// knowing reference nearby location, such as previously calculated location,
+// ground station, or airport location, etc. The reference position shall
+// be with in 180NM of the true position
+// returns (latitude, longitude) of the aircraft
 func (BDS05) AirbornePositionWithRef(bin []uint8, oeFlag bool, latRef, lonRef float64) (float64, float64, error) {
 	var lat, lon float64
 
@@ -99,6 +108,8 @@ func (BDS05) AirbornePositionWithRef(bin []uint8, oeFlag bool, latRef, lonRef fl
 	return lat, lon, nil
 }
 
+// Decode aircraft altitude
+// altitude in feet
 func (BDS05) Altitude(bin []uint8, ts uint) (alt int, err error) {
 	mb := bin[32:]
 
@@ -110,7 +121,7 @@ func (BDS05) Altitude(bin []uint8, ts uint) (alt int, err error) {
 		}
 	} else {
 		// GNSS altitude, meters
-		alt = int(common.BinToInt(mb[8:20]))
+		alt = int(float64(common.BinToInt(mb[8:20])) * 3.28084)
 	}
 
 	return

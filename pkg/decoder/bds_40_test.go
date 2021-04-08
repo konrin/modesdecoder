@@ -12,8 +12,12 @@ func TestBDS40_Alt(t *testing.T) {
 
 	bds := BDS40{}
 
-	if mcp, fms := bds.Alt(msg.GetBin()); mcp != 3008 || fms != 3008 {
-		t.Error("")
+	if bds.AltMcp(msg.GetBin()) != 3008 {
+		t.Error("AltMcp error")
+	}
+
+	if bds.AltFms(msg.GetBin()) != 3008 {
+		t.Error("AltFms error")
 	}
 }
 

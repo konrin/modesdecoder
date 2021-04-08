@@ -2,6 +2,7 @@ package decoder
 
 import "github.com/konrin/modesdecoder/pkg/common"
 
+// Track and turn report
 type BDS50 struct{}
 
 func (BDS50) Is(bits *common.Bits) bool {
@@ -34,6 +35,9 @@ func (BDS50) Is(bits *common.Bits) bool {
 	return true
 }
 
+// Roll angle, BDS 5,0 message
+// returns angle in degrees,
+// negative->left wing down, positive->right wing down
 func (BDS50) Roll(bits *common.Bits) float32 {
 	d := common.Data(bits)
 
@@ -52,6 +56,8 @@ func (BDS50) Roll(bits *common.Bits) float32 {
 	return float32(common.Round(angle, .5, 1))
 }
 
+// True track angle, BDS 5,0 message
+// returns angle in degrees to true north (from 0 to 360)
 func (BDS50) TRK(bits *common.Bits) float32 {
 	d := common.Data(bits)
 
@@ -73,6 +79,8 @@ func (BDS50) TRK(bits *common.Bits) float32 {
 	return float32(common.Round(trk, .5, 3))
 }
 
+// Ground speed, BDS 5,0 message
+// returns ground speed in knots
 func (BDS50) GS(bits *common.Bits) int {
 	d := common.Data(bits)
 
@@ -83,6 +91,8 @@ func (BDS50) GS(bits *common.Bits) int {
 	return int(d.Int64(24, 34) * 2)
 }
 
+// Track angle rate, BDS 5,0 message
+// returns angle rate in degrees/second
 func (BDS50) RTRK(bits *common.Bits) float32 {
 	d := common.Data(bits)
 
@@ -105,6 +115,8 @@ func (BDS50) RTRK(bits *common.Bits) float32 {
 	return float32(common.Round(angle, .5, 3))
 }
 
+// Aircraft true airspeed, BDS 5,0 message
+// returns true airspeed in knots
 func (BDS50) TAS(bits *common.Bits) int {
 	d := common.Data(bits)
 	if d.At(45) == 0 {

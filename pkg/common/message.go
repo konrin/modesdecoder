@@ -58,15 +58,17 @@ type Message struct {
 	OE bool
 
 	ICAO           string
-	AltitudeMcpFcu int
-	AltitudeFms    int
-	Baro           float32
+	Alt            int
+	SelectedAltMcp int
+	SelectedAltFms int
+	BaroSetting    float32
 	Callsign       string
 	Category       uint
 	Speed          float64
 	Track          float64
-	Tag            string
-	Rocd           int
+	SpeedType      string
+	DirType        string
+	VerticalRate   int
 
 	Squawk string
 
@@ -174,7 +176,7 @@ func (m *Message) String() string {
 
 	if m.DF == 4 || m.DF == 20 {
 		metaData["DF"] = m.DF
-		flightData["Altitude"] = m.AltitudeMcpFcu
+		flightData["Altitude"] = m.SelectedAltMcp
 	}
 
 	if m.DF == 17 || m.DF == 18 {
@@ -197,14 +199,14 @@ func (m *Message) String() string {
 			flightData["IsAirborn"] = m.IsAirborn
 			flightData["Lat"] = m.Lat
 			flightData["Lon"] = m.Lon
-			flightData["Altitude"] = m.AltitudeMcpFcu
+			flightData["Altitude"] = m.SelectedAltMcp
 		}
 
 		if m.TC == 19 {
 			flightData["Speed"] = m.Speed
 			flightData["Track"] = m.Track
-			flightData["Rocd"] = m.Rocd
-			flightData["Tag"] = m.Tag
+			flightData["Rocd"] = m.VerticalRate
+			flightData["Tag"] = m.SpeedType
 		}
 	}
 
@@ -222,9 +224,9 @@ func (m *Message) String() string {
 		}
 
 		if m.BdsCode == BdsCode4_0 {
-			flightData["AltitudeMcpFcu"] = m.AltitudeMcpFcu
-			flightData["AltitudeFms"] = m.AltitudeFms
-			flightData["Baro"] = m.Baro
+			flightData["AltitudeMcpFcu"] = m.SelectedAltMcp
+			flightData["AltitudeFms"] = m.SelectedAltFms
+			flightData["Baro"] = m.BaroSetting
 		}
 
 		if m.BdsCode == BdsCode4_4 {

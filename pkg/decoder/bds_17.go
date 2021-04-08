@@ -8,6 +8,7 @@ var AllBDS = []string{
 	"55", "56", "5F", "60", "NA", "NA", "E1", "E2",
 }
 
+// Common usage GICB capability report
 type BDS17 struct{}
 
 func (BDS17) Is(bits *common.Bits) bool {
@@ -24,6 +25,8 @@ func (BDS17) Is(bits *common.Bits) bool {
 	return true
 }
 
+// Extract capacities from BDS 1,7 message
+// returns list of support BDS codes
 func (BDS17) Cap(bits *common.Bits) []string {
 	d := common.Data(bits)
 

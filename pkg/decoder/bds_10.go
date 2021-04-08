@@ -31,6 +31,7 @@ func (BDS10) Is(bits *common.Bits) bool {
 }
 
 // OVC returning whether the transponder is OVC capable
+// return: Whether the transponder is OVC capable
 func (BDS10) OVC(bits *common.Bits) int {
 	return int(common.Data(bits).At(14))
 }

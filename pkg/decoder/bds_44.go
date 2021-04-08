@@ -2,6 +2,7 @@ package decoder
 
 import "github.com/konrin/modesdecoder/pkg/common"
 
+// Meteorological routine air report (experimental)
 type BDS44 struct{}
 
 func (bds BDS44) Is(bits *common.Bits) bool {
@@ -59,6 +60,8 @@ func (BDS44) Wind(bits *common.Bits) (float32, float32) {
 		float32(common.Round(float64(directions), 1, 2))
 }
 
+// Static air temperature
+// returns temperature in Celsius degree
 func (BDS44) Temp(bits *common.Bits) float32 {
 	d := common.Data(bits)
 
@@ -75,6 +78,8 @@ func (BDS44) Temp(bits *common.Bits) float32 {
 	return float32(temp)
 }
 
+// Static pressure
+// returns static pressure in hPa
 func (BDS44) Pressure(bits *common.Bits) int {
 	d := common.Data(bits)
 
@@ -85,6 +90,8 @@ func (BDS44) Pressure(bits *common.Bits) int {
 	return int(d.Int64(35, 46))
 }
 
+// Humidity
+// returns percentage of humidity, [0 - 100] %
 func (BDS44) Hum(bits *common.Bits) float32 {
 	d := common.Data(bits)
 
@@ -93,4 +100,16 @@ func (BDS44) Hum(bits *common.Bits) float32 {
 	}
 
 	return float32(d.Int64(50, 56) * 100.0 / 64)
+}
+
+// Turblence
+// returns turbulence level. 0=NIL, 1=Light, 2=Moderate, 3=Severe
+func (BDS44) Turb(bits *common.Bits) int {
+	d := common.Data(bits)
+
+	if d.At(46) == 0 {
+		return 0
+	}
+
+	return int(d.Int64(47, 49))
 }

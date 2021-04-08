@@ -2,6 +2,7 @@ package decoder
 
 import "github.com/konrin/modesdecoder/pkg/common"
 
+// Selected vertical intention
 type BDS40 struct{}
 
 func (BDS40) Is(bits *common.Bits) bool {
@@ -42,19 +43,22 @@ func (BDS40) Is(bits *common.Bits) bool {
 	return true
 }
 
-// Selected altitude, MCP/FCU
-func (BDS40) Alt(bits *common.Bits) (mcp, fms int) {
+// Selected altitude, MCP
+// https://www.skybrary.aero/index.php/Mode_Control_Panel_(MCP)
+// altitude in feet
+func (BDS40) AltMcp(bits *common.Bits) int {
 	d := common.Data(bits)
 
-	if d.At(0) != 0 {
-		mcp = int(d.Int64(1, 13) * 16) // ft
-	}
+	return int(d.Int64(1, 13) * 16) // ft
+}
 
-	if d.At(13) != 0 {
-		fms = int(d.Int64(14, 26) * 16) // ft
-	}
+// Selected altitude, FMS
+// https://www.skybrary.aero/index.php/Flight_Management_System
+// altitude in feet
+func (BDS40) AltFms(bits *common.Bits) int {
+	d := common.Data(bits)
 
-	return
+	return int(d.Int64(14, 26) * 16) // ft
 }
 
 // Barometric pressure setting

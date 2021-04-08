@@ -95,7 +95,7 @@ func NewDecoder(cacheTTL time.Duration) *Decoder {
 		BDS50: BDS50{},
 
 		cacheTTL:      cacheTTL,
-		cachePosition: make(map[string]*AircraftPositionInfo, 0),
+		cachePosition: make(map[string]*AircraftPositionInfo),
 	}
 }
 
@@ -114,7 +114,7 @@ func (d *Decoder) Decode(msg *common.Message) error {
 
 	if msg.DF == 4 || msg.DF == 20 {
 		// Altitude code
-		msg.AltitudeMcpFcu, err = common.AltCode(msg.GetBin())
+		msg.SelectedAltMcp, err = common.AltCode(msg.GetBin())
 		if err != nil {
 			return err
 		}
@@ -197,7 +197,7 @@ func (d *Decoder) decodeAdsB(msg *common.Message) error {
 
 		posInfo.SetPosition(msg.Lat, msg.Lon)
 
-		msg.AltitudeMcpFcu, err = d.BDS05.Altitude(msg.GetBinRaw(), msg.TC)
+		msg.Alt, err = d.BDS05.Altitude(msg.GetBinRaw(), msg.TC)
 		if err != nil {
 			return err
 		}
@@ -215,7 +215,12 @@ func (d *Decoder) decodeAdsB(msg *common.Message) error {
 		// BDS 0,9 Airborne velocity
 		msg.BdsCode = common.BdsCode0_9
 
-		msg.Speed, msg.Track, msg.Rocd, msg.Tag, err = d.BDS09.AirborneVelocity(msg.GetBin())
+		msg.Speed,
+			msg.Track,
+			msg.VerticalRate,
+			msg.SpeedType,
+			msg.DirType,
+			err = d.BDS09.AirborneVelocity(msg.GetBin())
 		if err != nil {
 			return err
 		}
@@ -268,8 +273,9 @@ func (d *Decoder) decodeCommB(msg *common.Message) error {
 
 	if d.BDS40.Is(msg.GetBin()) {
 		msg.BdsCode = common.BdsCode4_0
-		msg.AltitudeMcpFcu, msg.AltitudeFms = d.BDS40.Alt(msg.GetBin())
-		msg.Baro = d.BDS40.Baro(msg.GetBin())
+		msg.SelectedAltMcp = d.BDS40.AltMcp(msg.GetBin())
+		msg.SelectedAltFms = d.BDS40.AltFms(msg.GetBin())
+		msg.BaroSetting = d.BDS40.Baro(msg.GetBin())
 	}
 
 	if d.BDS44.Is(msg.GetBin()) {
@@ -304,7 +310,7 @@ func (d *Decoder) GetAircraftPositionFromCache(icao string) *AircraftPositionInf
 		}
 	}
 
-	if info.updateAt.Sub(time.Now()) > d.cacheTTL {
+	if time.Until(info.updateAt) > d.cacheTTL {
 		info = &AircraftPositionInfo{
 			updateAt: time.Now(),
 		}
