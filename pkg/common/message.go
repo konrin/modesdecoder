@@ -82,7 +82,8 @@ type Message struct {
 	WindDiraction,
 	Temp,
 	Hum float32
-	Pressure int
+	Pressure  int
+	Turblence int
 
 	Roll float32
 	Trk  float32
@@ -205,8 +206,8 @@ func (m *Message) String() string {
 		if m.TC == 19 {
 			flightData["Speed"] = m.Speed
 			flightData["Track"] = m.Track
-			flightData["Rocd"] = m.VerticalRate
-			flightData["Tag"] = m.SpeedType
+			flightData["VerticalRate"] = m.VerticalRate
+			flightData["SpeedType"] = m.SpeedType
 		}
 	}
 
@@ -224,8 +225,8 @@ func (m *Message) String() string {
 		}
 
 		if m.BdsCode == BdsCode4_0 {
-			flightData["AltitudeMcpFcu"] = m.SelectedAltMcp
-			flightData["AltitudeFms"] = m.SelectedAltFms
+			flightData["SelectedAltMcp"] = m.SelectedAltMcp
+			flightData["SelectedAltFms"] = m.SelectedAltFms
 			flightData["Baro"] = m.BaroSetting
 		}
 
@@ -235,6 +236,7 @@ func (m *Message) String() string {
 			flightData["Temp"] = m.Temp
 			flightData["Hum"] = m.Hum
 			flightData["Pressure"] = m.Pressure
+			flightData["Turblence"] = m.Turblence
 		}
 
 		if m.BdsCode == BdsCode5_0 {

@@ -114,7 +114,7 @@ func (d *Decoder) Decode(msg *common.Message) error {
 
 	if msg.DF == 4 || msg.DF == 20 {
 		// Altitude code
-		msg.SelectedAltMcp, err = common.AltCode(msg.GetBin())
+		msg.Alt, err = common.AltCode(msg.GetBin())
 		if err != nil {
 			return err
 		}
